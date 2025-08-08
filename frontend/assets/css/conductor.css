@@ -1,0 +1,568 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    color: #F8FAFC;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+
+
+/* Game Screens */
+.game-screen {
+    display: none;
+    flex: 1;
+    padding: 2rem;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.game-screen.active {
+    display: flex;
+}
+
+/* Setup Screen */
+.setup-container {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    padding: 3rem;
+    backdrop-filter: blur(10px);
+    max-width: 600px;
+    width: 100%;
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.setup-container h1 {
+    font-size: 3rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #FBBF24, #38BDF8);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+}
+
+.setup-container h2 {
+    font-size: 1.5rem;
+    color: #94A3B8;
+    margin-bottom: 2rem;
+    font-weight: 400;
+}
+
+.game-description {
+    background: linear-gradient(135deg, #FBBF24, #F87171);
+    color: #1E293B;
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    font-weight: 500;
+}
+
+.setup-form {
+    text-align: left;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+    color: #F8FAFC;
+}
+
+.form-control {
+    width: 100%;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.8);
+    border: 2px solid rgba(148, 163, 184, 0.2);
+    border-radius: 10px;
+    font-size: 1rem;
+    color: #F8FAFC;
+    transition: all 0.3s ease;
+    font-family: 'Poppins', sans-serif;
+}
+
+.form-control:focus {
+    outline: none;
+    border-color: #FBBF24;
+    box-shadow: 0 0 0 3px rgba(251, 191, 36, 0.1);
+}
+
+.form-control option {
+    background: #1E293B;
+    color: #F8FAFC;
+}
+
+.hidden {
+    display: none;
+}
+
+/* Energy Preview */
+.energy-preview {
+    background: rgba(15, 23, 42, 0.6);
+    padding: 1.5rem;
+    border-radius: 15px;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.energy-preview h3 {
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+
+.energy-levels {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+.energy-level {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.8rem;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 8px;
+    border-left: 4px solid #FBBF24;
+}
+
+.level-number {
+    font-weight: bold;
+    color: #FBBF24;
+    font-size: 1.1rem;
+}
+
+.level-desc {
+    color: #94A3B8;
+    font-size: 0.9rem;
+}
+
+/* Buttons */
+.btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-block;
+    text-align: center;
+    font-family: 'Poppins', sans-serif;
+}
+
+.btn-primary {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+    width: 100%;
+    margin-top: 1rem;
+}
+
+.btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(251, 191, 36, 0.3);
+}
+
+.btn-secondary {
+    background: rgba(148, 163, 184, 0.2);
+    color: #F8FAFC;
+    border: 1px solid rgba(148, 163, 184, 0.3);
+}
+
+.btn-secondary:hover {
+    background: rgba(148, 163, 184, 0.3);
+    transform: translateY(-1px);
+}
+
+.btn-danger {
+    background: linear-gradient(135deg, #F87171, #EF4444);
+    color: #F8FAFC;
+}
+
+.btn-danger:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 10px 30px rgba(248, 113, 113, 0.3);
+}
+
+.btn-outline {
+    background: transparent;
+    color: #FBBF24;
+    border: 2px solid #FBBF24;
+}
+
+.btn-outline:hover {
+    background: #FBBF24;
+    color: #1E293B;
+}
+
+/* Game Screen */
+.game-container {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    backdrop-filter: blur(10px);
+    max-width: 800px;
+    width: 100%;
+    min-height: 600px;
+    display: flex;
+    flex-direction: column;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.game-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1rem;
+    border-bottom: 2px solid rgba(148, 163, 184, 0.2);
+}
+
+.topic-display h2 {
+    color: #FBBF24;
+    font-size: 1.8rem;
+    font-weight: 600;
+}
+
+.timer-display {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+    padding: 1rem 1.5rem;
+    border-radius: 15px;
+    font-size: 1.5rem;
+    font-weight: bold;
+    min-width: 80px;
+    text-align: center;
+}
+
+/* Main Game Area */
+.game-main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 2rem 0;
+}
+
+.energy-display {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.energy-label {
+    font-size: 1.2rem;
+    color: #94A3B8;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.energy-number {
+    font-size: 6rem;
+    font-weight: bold;
+    color: #FBBF24;
+    margin-bottom: 0.5rem;
+    transition: all 0.5s ease;
+}
+
+.energy-description {
+    font-size: 1.5rem;
+    color: #94A3B8;
+    font-weight: 500;
+    transition: all 0.5s ease;
+}
+
+/* Energy Meter */
+.energy-meter {
+    width: 100%;
+    max-width: 400px;
+    margin-bottom: 3rem;
+}
+
+.meter-bar {
+    width: 100%;
+    height: 20px;
+    background: rgba(15, 23, 42, 0.8);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+    margin-bottom: 0.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.meter-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #10B981 0%, #FBBF24 50%, #F87171 100%);
+    border-radius: 10px;
+    transition: width 0.5s ease;
+    width: 50%;
+}
+
+.meter-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9rem;
+    color: #94A3B8;
+    font-weight: 500;
+}
+
+/* Breath Overlay */
+.breath-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(251, 191, 36, 0.95);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.5s ease;
+    border-radius: 20px;
+}
+
+.breath-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.breath-content {
+    text-align: center;
+    color: #1E293B;
+}
+
+.breath-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    animation: pulse 2s infinite;
+}
+
+.breath-text {
+    font-size: 3rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+    animation: fadeInOut 3s infinite;
+}
+
+.breath-instruction {
+    font-size: 1.2rem;
+    opacity: 0.9;
+}
+
+/* Game Instructions */
+.game-instructions {
+    text-align: center;
+    color: #94A3B8;
+    font-size: 1.1rem;
+    line-height: 1.6;
+}
+
+.game-instructions p {
+    margin-bottom: 0.5rem;
+}
+
+/* Game Controls */
+.game-controls {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+/* Results Screen */
+.results-container {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    padding: 3rem;
+    backdrop-filter: blur(10px);
+    max-width: 500px;
+    width: 100%;
+    text-align: center;
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.results-container h2 {
+    font-size: 2.5rem;
+    color: #FBBF24;
+    margin-bottom: 2rem;
+    font-weight: 700;
+}
+
+.results-stats {
+    margin-bottom: 2rem;
+}
+
+.stat-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    margin-bottom: 0.5rem;
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.stat-label {
+    font-weight: 600;
+    color: #F8FAFC;
+}
+
+.stat-value {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #FBBF24;
+}
+
+.results-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.1); }
+}
+
+@keyframes fadeInOut {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.7; }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .setup-container,
+    .game-container,
+    .results-container {
+        margin: 1rem;
+        padding: 2rem;
+    }
+    
+    .setup-container h1 {
+        font-size: 2.5rem;
+    }
+    
+    .energy-number {
+        font-size: 4rem;
+    }
+    
+    .breath-text {
+        font-size: 2rem;
+    }
+    
+    .game-header {
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .game-controls {
+        flex-direction: column;
+    }
+    
+    .results-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .setup-container h1 {
+        font-size: 2rem;
+    }
+    
+    .energy-number {
+        font-size: 3rem;
+    }
+    
+    .breath-text {
+        font-size: 1.5rem;
+    }
+    
+    .breath-icon {
+        font-size: 3rem;
+    }
+}
+
+/* Loading Indicator */
+.loading-indicator {
+    text-align: center;
+    margin-top: 2rem;
+    color: #94A3B8;
+    font-size: 1.1rem;
+}
+
+.loading-indicator p {
+    margin-bottom: 1rem;
+}
+
+.spinner {
+    border: 4px solid rgba(251, 191, 36, 0.3);
+    border-top: 4px solid #FBBF24;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.hidden {
+    display: none !important;
+}

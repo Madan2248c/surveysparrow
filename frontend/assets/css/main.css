@@ -1,0 +1,201 @@
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%);
+    color: #F8FAFC;
+    min-height: 100vh;
+    overflow-x: hidden;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.header {
+    text-align: center;
+    margin-bottom: 4rem;
+    animation: fadeInDown 0.8s ease-out;
+}
+
+.app-title {
+    font-size: clamp(3rem, 8vw, 5rem);
+    font-weight: 700;
+    background: linear-gradient(135deg, #FBBF24, #38BDF8, #F87171);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+}
+
+.tagline {
+    font-size: clamp(1.1rem, 3vw, 1.5rem);
+    color: #94A3B8;
+    font-weight: 400;
+    opacity: 0.9;
+}
+
+/* Games Container */
+.games-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+    flex: 1;
+    align-content: center;
+}
+
+/* Game Cards */
+.game-card {
+    position: relative;
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 2.5rem;
+    cursor: pointer;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: 1px solid rgba(148, 163, 184, 0.1);
+    backdrop-filter: blur(10px);
+    animation: fadeInUp 0.8s ease-out;
+}
+
+.game-card:nth-child(1) { animation-delay: 0.1s; }
+.game-card:nth-child(2) { animation-delay: 0.2s; }
+.game-card:nth-child(3) { animation-delay: 0.3s; }
+
+.game-card:hover {
+    transform: translateY(-8px) scale(1.02);
+    border-color: rgba(251, 191, 36, 0.3);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+}
+
+.card-content {
+    position: relative;
+    z-index: 2;
+}
+
+.game-title {
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+}
+
+.game-description {
+    color: #94A3B8;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    font-size: 1rem;
+}
+
+.play-btn {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #0F172A;
+    border: none;
+    padding: 0.75rem 2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.play-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(251, 191, 36, 0.3);
+}
+
+.play-btn:active {
+    transform: translateY(0);
+}
+
+.card-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, rgba(56, 189, 248, 0.1), rgba(248, 113, 113, 0.1));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1;
+}
+
+.game-card:hover .card-bg {
+    opacity: 1;
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeInDown {
+    from {
+        opacity: 0;
+        transform: translateY(-30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .games-container {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .game-card {
+        padding: 2rem;
+    }
+    
+    .game-title {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .app-title {
+        font-size: 3rem;
+    }
+    
+    .tagline {
+        font-size: 1.1rem;
+    }
+    
+    .game-card {
+        padding: 1.5rem;
+    }
+}

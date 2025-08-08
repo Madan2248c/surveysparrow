@@ -1,0 +1,357 @@
+/* Game Screen Styles */
+.game-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.game-header {
+    margin-bottom: 3rem;
+}
+
+.game-header h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+/* Game Prompt */
+.game-prompt {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    max-width: 600px;
+    backdrop-filter: blur(10px);
+    animation: pulse 2s infinite;
+}
+
+.game-prompt {
+    font-size: 1.5rem;
+    font-weight: 500;
+    color: #F8FAFC;
+    line-height: 1.6;
+}
+
+/* Timer Container */
+.timer-container {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 3rem;
+}
+
+.circular-timer {
+    position: relative;
+    width: 200px;
+    height: 200px;
+}
+
+.timer-circle {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    background: conic-gradient(#FBBF24 0deg, #334155 0deg);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    transition: background 0.3s ease;
+}
+
+.timer-circle::before {
+    content: '';
+    position: absolute;
+    width: 80%;
+    height: 80%;
+    background: #1E293B;
+    border-radius: 50%;
+}
+
+.timer-inner {
+    position: relative;
+    z-index: 2;
+    font-size: 3rem;
+    font-weight: 700;
+    color: #FBBF24;
+}
+
+/* Microphone Section */
+.microphone-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding: 2rem;
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 20px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.microphone-icon {
+    font-size: 4rem;
+    margin-bottom: 1rem;
+    color: #94A3B8;
+    transition: all 0.3s ease;
+}
+
+.microphone-section p {
+    font-size: 1.2rem;
+    color: #94A3B8;
+    font-weight: 500;
+}
+
+/* Live Transcription */
+.live-transcription {
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-top: 1.5rem;
+    min-height: 80px;
+    max-height: 150px;
+    overflow-y: auto;
+    transition: all 0.3s ease;
+    position: relative;
+}
+
+.live-transcription.listening {
+    border-color: #FBBF24;
+    box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    animation: pulse-glow 2s infinite;
+}
+
+.transcription-placeholder {
+    color: #64748B;
+    font-style: italic;
+    text-align: center;
+    font-size: 1rem;
+}
+
+.live-transcription:not(.listening) .transcription-placeholder {
+    color: #94A3B8;
+}
+
+.interim-text {
+    color: #FBBF24;
+    font-style: italic;
+    opacity: 0.8;
+}
+
+.live-transcription:not(.listening) {
+    border-color: rgba(148, 163, 184, 0.2);
+}
+
+.live-transcription.error {
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    color: #EF4444;
+    font-size: 0.9rem;
+    text-align: center;
+    font-weight: 500;
+    padding: 0.5rem;
+}
+
+/* Manual Transcription Fallback */
+.manual-transcription {
+    margin-top: 1rem;
+    padding: 1rem;
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.3);
+    border-radius: 15px;
+}
+
+.manual-label {
+    color: #94A3B8;
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+    text-align: center;
+}
+
+#manual-input {
+    width: 100%;
+    background: rgba(15, 23, 42, 0.8);
+    border: 1px solid rgba(148, 163, 184, 0.3);
+    border-radius: 10px;
+    padding: 0.8rem;
+    color: #F8FAFC;
+    font-size: 1rem;
+    resize: vertical;
+    min-height: 80px;
+}
+
+#manual-input:focus {
+    outline: none;
+    border-color: #FBBF24;
+    box-shadow: 0 0 5px rgba(251, 191, 36, 0.3);
+}
+
+#manual-input::placeholder {
+    color: #64748B;
+}
+
+/* Progress Indicator */
+.progress-indicator {
+    font-size: 1.1rem;
+    color: #94A3B8;
+    margin-bottom: 2rem;
+    font-weight: 500;
+}
+
+/* Next Button */
+.next-btn {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+    border: none;
+    padding: 1rem 2.5rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+.next-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(251, 191, 36, 0.4);
+}
+
+.next-btn:active {
+    transform: translateY(0);
+}
+
+/* Removed evaluation feedback styles since we're not showing immediate feedback */
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(251, 191, 36, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 10px rgba(251, 191, 36, 0);
+    }
+}
+
+@keyframes pulse-glow {
+    0%, 100% {
+        box-shadow: 0 0 10px rgba(251, 191, 36, 0.3);
+    }
+    50% {
+        box-shadow: 0 0 20px rgba(251, 191, 36, 0.6);
+    }
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, -30%);
+    }
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .game-screen {
+        padding: 1rem;
+    }
+    
+    .game-header h2 {
+        font-size: 2rem;
+    }
+    
+    .game-prompt {
+        font-size: 1.3rem;
+        padding: 1.5rem;
+    }
+    
+    .circular-timer {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .timer-inner {
+        font-size: 2.5rem;
+    }
+    
+    .microphone-icon {
+        font-size: 3rem;
+    }
+    
+    .live-transcription {
+        min-height: 60px;
+        max-height: 120px;
+        padding: 1rem;
+    }
+    
+    .manual-transcription {
+        padding: 0.8rem;
+    }
+    
+    #manual-input {
+        min-height: 60px;
+        font-size: 0.9rem;
+    }
+    
+    /* Removed evaluation feedback responsive styles */
+}
+
+@media (max-width: 480px) {
+    .game-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .game-prompt {
+        font-size: 1.1rem;
+        padding: 1rem;
+    }
+    
+    .circular-timer {
+        width: 120px;
+        height: 120px;
+    }
+    
+    .timer-inner {
+        font-size: 2rem;
+    }
+    
+    .microphone-icon {
+        font-size: 2.5rem;
+    }
+    
+    .live-transcription {
+        min-height: 50px;
+        max-height: 100px;
+        padding: 0.8rem;
+        font-size: 0.9rem;
+    }
+    
+    .manual-transcription {
+        padding: 0.6rem;
+    }
+    
+    #manual-input {
+        min-height: 50px;
+        font-size: 0.85rem;
+        padding: 0.6rem;
+    }
+    
+    .next-btn {
+        padding: 0.8rem 2rem;
+        font-size: 1rem;
+    }
+    
+    /* Removed evaluation feedback responsive styles */
+}

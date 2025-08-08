@@ -1,0 +1,265 @@
+/* Feedback Screen Styles */
+.feedback-screen {
+    display: none;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.feedback-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.feedback-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+}
+
+.results-summary {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.result-item:last-child {
+    border-bottom: none;
+}
+
+.result-label {
+    color: #94A3B8;
+    font-size: 1.1rem;
+}
+
+.result-value {
+    color: #F8FAFC;
+    font-weight: 600;
+    font-size: 1.1rem;
+}
+
+/* Evaluation Feedback Styles */
+.evaluation-feedback {
+    background: rgba(30, 41, 59, 0.9);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    animation: slideInUp 0.5s ease-out;
+}
+
+.evaluation-feedback h3 {
+    text-align: center;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin-bottom: 2rem;
+    color: #FBBF24;
+}
+
+.evaluation-scores {
+    display: grid;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.score-item {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 15px;
+    padding: 1.5rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.score-label {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #94A3B8;
+    margin-bottom: 0.5rem;
+}
+
+.score-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FBBF24;
+    margin-bottom: 1rem;
+}
+
+.score-feedback {
+    color: #E2E8F0;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.continue-btn {
+    background: linear-gradient(135deg, #10B981, #059669);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 0 auto;
+}
+
+.continue-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(16, 185, 129, 0.3);
+}
+
+/* Evaluation Summary Styles */
+.evaluation-summary {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.evaluation-summary h3 {
+    text-align: center;
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    color: #F8FAFC;
+}
+
+.evaluation-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.eval-stat {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 15px;
+    padding: 1.5rem;
+    text-align: center;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.eval-label {
+    display: block;
+    font-size: 0.9rem;
+    color: #94A3B8;
+    margin-bottom: 0.5rem;
+}
+
+.eval-score {
+    display: block;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #FBBF24;
+}
+
+.feedback-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    flex-wrap: wrap;
+}
+
+.try-again-btn, .next-game-btn {
+    padding: 1rem 2rem;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.try-again-btn {
+    background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+    color: white;
+}
+
+.next-game-btn {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #0F172A;
+}
+
+.try-again-btn:hover, .next-game-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* Animation for evaluation feedback */
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .feedback-title {
+        font-size: 2rem;
+    }
+    
+    .feedback-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .try-again-btn, .next-game-btn {
+        width: 100%;
+        max-width: 300px;
+    }
+    
+    .evaluation-feedback {
+        padding: 1.5rem;
+    }
+    
+    .evaluation-scores {
+        gap: 1rem;
+    }
+    
+    .score-item {
+        padding: 1rem;
+    }
+    
+    .score-value {
+        font-size: 1.5rem;
+    }
+    
+    .evaluation-stats {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 480px) {
+    .feedback-title {
+        font-size: 1.8rem;
+    }
+    
+    .evaluation-feedback h3 {
+        font-size: 1.5rem;
+    }
+    
+    .score-value {
+        font-size: 1.3rem;
+    }
+    
+    .eval-score {
+        font-size: 1.5rem;
+    }
+}

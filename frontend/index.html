@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oratora - Public Speaking Training Platform</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1 class="app-title">Oratora</h1>
+            <p class="tagline">Master the art of public speaking with AI-powered feedback</p>
+        </div>
+        
+        <div class="games-container">
+            <div class="game-card" onclick="navigateToSetup('rapid-fire')">
+                <div class="card-content">
+                    <h2 class="game-title">Rapid Fire Analogies</h2>
+                    <p class="game-description">Think on your feet! Create analogies quickly and get instant AI feedback on your speech delivery, response rate, and confidence.</p>
+                    <button class="play-btn">Start Game</button>
+                </div>
+                <div class="card-bg"></div>
+            </div>
+            
+            <div class="game-card" onclick="navigateToSetup('conductor')">
+                <div class="card-content">
+                    <h2 class="game-title">The Conductor</h2>
+                    <p class="game-description">Sharpen your musicality and energy modulation. Learn to adapt your voice, tone, and energy on command while speaking.</p>
+                    <button class="play-btn">Start Game</button>
+                </div>
+                <div class="card-bg"></div>
+            </div>
+            
+            <div class="game-card" onclick="navigateToSetup('triple-step')">
+                <div class="card-content">
+                    <h2 class="game-title">Triple Step</h2>
+                    <p class="game-description">Structure your thoughts! Learn to organize your responses with clear introduction, development, and conclusion.</p>
+                    <button class="play-btn">Start Game</button>
+                </div>
+                <div class="card-bg"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="assets/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,250 @@
+/* Setup Screen Styles */
+.setup-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 2rem;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.setup-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.setup-title {
+    font-size: 2.5rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+}
+
+.setup-instructions {
+    color: #94A3B8;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+/* Difficulty Section Styles */
+.difficulty-section {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.difficulty-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+    display: block;
+}
+
+.difficulty-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+}
+
+.difficulty-option {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 15px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+.difficulty-option:hover {
+    transform: translateY(-2px);
+    border-color: rgba(251, 191, 36, 0.3);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+}
+
+.difficulty-option.selected {
+    border-color: #FBBF24;
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.difficulty-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+.difficulty-description {
+    font-size: 0.9rem;
+    color: #94A3B8;
+    line-height: 1.4;
+}
+
+/* Prompt Count Section Styles */
+.prompt-count-section {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.prompt-count-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+    display: block;
+}
+
+.prompt-count-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #334155;
+    outline: none;
+    -webkit-appearance: none;
+    margin-bottom: 1rem;
+}
+
+.prompt-count-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #38BDF8;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.prompt-count-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #38BDF8;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.prompt-count-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #38BDF8;
+    text-align: center;
+}
+
+.timer-section {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 20px;
+    padding: 2rem;
+    margin: 2rem 0;
+    border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.timer-label {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: #F8FAFC;
+}
+
+.timer-slider {
+    width: 100%;
+    height: 8px;
+    border-radius: 4px;
+    background: #334155;
+    outline: none;
+    -webkit-appearance: none;
+    margin-bottom: 1rem;
+}
+
+.timer-slider::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #FBBF24;
+    cursor: pointer;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timer-slider::-moz-range-thumb {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: #FBBF24;
+    cursor: pointer;
+    border: none;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.timer-value {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #FBBF24;
+    text-align: center;
+}
+
+.ready-btn {
+    background: linear-gradient(135deg, #38BDF8, #0EA5E9);
+    color: white;
+    border: none;
+    padding: 1rem 3rem;
+    border-radius: 50px;
+    font-size: 1.1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: block;
+    margin: 2rem auto 0;
+}
+
+.ready-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px rgba(56, 189, 248, 0.3);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .setup-title {
+        font-size: 2rem;
+    }
+    
+    .difficulty-options {
+        grid-template-columns: 1fr;
+    }
+    
+    .difficulty-option {
+        padding: 1rem;
+    }
+    
+    .prompt-count-section, .difficulty-section {
+        padding: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .setup-title {
+        font-size: 1.8rem;
+    }
+    
+    .difficulty-name {
+        font-size: 1rem;
+    }
+    
+    .difficulty-description {
+        font-size: 0.8rem;
+    }
+    
+    .prompt-count-value {
+        font-size: 1.3rem;
+    }
+}

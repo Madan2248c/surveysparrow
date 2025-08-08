@@ -1,0 +1,593 @@
+class ConductorGame {
+    constructor() {
+        this.currentScreen = 'setup';
+        this.gameState = {
+            isPlaying: false,
+            isPaused: false,
+            currentEnergy: 5,
+            timeRemaining: 0,
+            totalTime: 0,
+            actualTimeSpent: 0,
+            energyChanges: 0,
+            breathCount: 0,
+            topic: '',
+            duration: 3,
+            sessionId: null,
+            sessionStartTime: null
+        };
+        
+        this.timers = {
+            gameTimer: null,
+            energyTimer: null,
+            breathTimer: null
+        };
+        
+        this.mediaRecorder = null;
+        this.audioChunks = [];
+        this.isRecording = false;
+        
+        this.energyDescriptions = {
+            1: 'Whisper',
+            2: 'Very Calm',
+            3: 'Calm',
+            4: 'Low Normal',
+            5: 'Normal',
+            6: 'High Normal',
+            7: 'Energetic',
+            8: 'High Energy',
+            9: 'Very High Energy'
+        };
+        
+        this.energyColors = {
+            1: '#28a745',
+            2: '#28a745',
+            3: '#28a745',
+            4: '#ffc107',
+            5: '#ffc107',
+            6: '#ffc107',
+            7: '#dc3545',
+            8: '#dc3545',
+            9: '#dc3545'
+        };
+        
+        this.init();
+    }
+    
+    init() {
+        this.bindEvents();
+        this.setupCustomTopicHandling();
+    }
+    
+    bindEvents() {
+        // Setup screen events
+        document.getElementById('start-game-btn').addEventListener('click', () => this.startGame());
+        
+        // Game screen events
+        document.getElementById('pause-btn').addEventListener('click', () => this.togglePause());
+        document.getElementById('end-game-btn').addEventListener('click', () => this.endGame());
+        
+        // Results screen events
+        document.getElementById('play-again-btn').addEventListener('click', () => this.playAgain());
+        document.getElementById('back-to-setup-btn').addEventListener('click', () => this.backToSetup());
+    }
+    
+    setupCustomTopicHandling() {
+        const topicSelect = document.getElementById('topic-select');
+        const customTopicGroup = document.getElementById('custom-topic-group');
+        
+        topicSelect.addEventListener('change', (e) => {
+            if (e.target.value === 'custom') {
+                customTopicGroup.classList.remove('hidden');
+                document.getElementById('custom-topic').focus();
+            } else {
+                customTopicGroup.classList.add('hidden');
+            }
+        });
+    }
+    
+    async startGame() {
+        // Get game settings
+        const topicSelect = document.getElementById('topic-select');
+        const customTopic = document.getElementById('custom-topic').value.trim();
+        const duration = parseInt(document.getElementById('duration-select').value);
+        
+        // Validate topic
+        let topic = topicSelect.value;
+        if (topic === 'custom') {
+            if (!customTopic) {
+                alert('Please enter a custom topic');
+                return;
+            }
+            topic = customTopic;
+        }
+        
+        // Generate session ID
+        const sessionId = 'conductor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        
+        try {
+            // Start conductor session on backend
+            const response = await fetch('/api/v1/games/conductor/start', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({
+                    sessionId,
+                    topic,
+                    duration
+                })
+            });
+            
+            if (!response.ok) {
+                throw new Error('Failed to start session');
+            }
+            
+            const sessionData = await response.json();
+            console.log('Session started:', sessionData);
+            
+            // Initialize game state
+            this.gameState = {
+                isPlaying: true,
+                isPaused: false,
+                currentEnergy: 5,
+                timeRemaining: duration * 60,
+                totalTime: duration * 60,
+                actualTimeSpent: 0,
+                energyChanges: 0,
+                breathCount: 0,
+                topic: topic,
+                duration: duration,
+                sessionId: sessionId,
+                sessionStartTime: Date.now()
+            };
+            
+            // Start audio recording
+            await this.startRecording();
+            
+            // Update UI
+            this.showScreen('game');
+            this.updateTopicDisplay();
+            this.updateEnergyDisplay();
+            this.updateTimer();
+            
+            // Start game timers
+            this.startGameTimer();
+            this.scheduleEnergyChange();
+            this.scheduleBreathPrompt();
+            
+        } catch (error) {
+            console.error('Error starting game:', error);
+            alert('Failed to start game. Please try again.');
+        }
+    }
+    
+    startGameTimer() {
+        this.timers.gameTimer = setInterval(() => {
+            if (!this.gameState.isPaused) {
+                this.gameState.timeRemaining--;
+                this.updateTimer();
+                
+                if (this.gameState.timeRemaining <= 0) {
+                    this.endGame();
+                }
+            }
+        }, 1000);
+    }
+    
+    scheduleEnergyChange() {
+        const minInterval = 15; // 15 seconds
+        const maxInterval = 30; // 30 seconds
+        const interval = Math.random() * (maxInterval - minInterval) + minInterval;
+        
+        this.timers.energyTimer = setTimeout(() => {
+            if (this.gameState.isPlaying && !this.gameState.isPaused) {
+                this.changeEnergy();
+                this.scheduleEnergyChange(); // Schedule next change
+            }
+        }, interval * 1000);
+    }
+    
+    scheduleBreathPrompt() {
+        const minInterval = 45; // 45 seconds
+        const maxInterval = 90; // 90 seconds
+        const interval = Math.random() * (maxInterval - minInterval) + minInterval;
+        
+        this.timers.breathTimer = setTimeout(() => {
+            if (this.gameState.isPlaying && !this.gameState.isPaused) {
+                this.showBreathPrompt();
+                this.scheduleBreathPrompt(); // Schedule next breath prompt
+            }
+        }, interval * 1000);
+    }
+    
+    async changeEnergy() {
+        // Generate new energy level (1-9)
+        let newEnergy;
+        do {
+            newEnergy = Math.floor(Math.random() * 9) + 1;
+        } while (newEnergy === this.gameState.currentEnergy);
+        
+        this.gameState.currentEnergy = newEnergy;
+        this.gameState.energyChanges++;
+        
+        this.updateEnergyDisplay();
+        
+        // Add visual feedback
+        this.addEnergyChangeEffect();
+        
+        // Record energy change on backend
+        if (this.gameState.sessionId) {
+            try {
+                const timestamp = Date.now() - this.gameState.sessionStartTime;
+                await fetch('/api/v1/games/conductor/energy-change', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: this.gameState.sessionId,
+                        energyLevel: newEnergy,
+                        timestamp: timestamp
+                    })
+                });
+            } catch (error) {
+                console.error('Error recording energy change:', error);
+            }
+        }
+    }
+    
+    async showBreathPrompt() {
+        this.gameState.breathCount++;
+        const breathOverlay = document.getElementById('breath-overlay');
+        
+        breathOverlay.classList.add('active');
+        
+        // Record breath moment on backend
+        if (this.gameState.sessionId) {
+            try {
+                const timestamp = Date.now() - this.gameState.sessionStartTime;
+                await fetch('/api/v1/games/conductor/breath-moment', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        sessionId: this.gameState.sessionId,
+                        timestamp: timestamp
+                    })
+                });
+            } catch (error) {
+                console.error('Error recording breath moment:', error);
+            }
+        }
+        
+        // Hide breath prompt after 3 seconds
+        setTimeout(() => {
+            breathOverlay.classList.remove('active');
+        }, 3000);
+    }
+    
+    addEnergyChangeEffect() {
+        const energyNumber = document.getElementById('energy-number');
+        energyNumber.style.transform = 'scale(1.2)';
+        energyNumber.style.color = this.energyColors[this.gameState.currentEnergy];
+        
+        setTimeout(() => {
+            energyNumber.style.transform = 'scale(1)';
+        }, 300);
+    }
+    
+    updateEnergyDisplay() {
+        const energyNumber = document.getElementById('energy-number');
+        const energyDescription = document.getElementById('energy-description');
+        const meterFill = document.getElementById('meter-fill');
+        
+        energyNumber.textContent = this.gameState.currentEnergy;
+        energyDescription.textContent = this.energyDescriptions[this.gameState.currentEnergy];
+        
+        // Update meter fill (1-9 maps to 0-100%)
+        const meterPercentage = ((this.gameState.currentEnergy - 1) / 8) * 100;
+        meterFill.style.width = `${meterPercentage}%`;
+        
+        // Update color based on energy level
+        energyNumber.style.color = this.energyColors[this.gameState.currentEnergy];
+    }
+    
+    updateTimer() {
+        const minutes = Math.floor(this.gameState.timeRemaining / 60);
+        const seconds = this.gameState.timeRemaining % 60;
+        const timerDisplay = document.getElementById('timer');
+        
+        timerDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    updateTopicDisplay() {
+        document.getElementById('current-topic').textContent = this.gameState.topic;
+    }
+    
+    togglePause() {
+        this.gameState.isPaused = !this.gameState.isPaused;
+        const pauseBtn = document.getElementById('pause-btn');
+        
+        if (this.gameState.isPaused) {
+            pauseBtn.textContent = 'Resume';
+            pauseBtn.classList.remove('btn-secondary');
+            pauseBtn.classList.add('btn-primary');
+        } else {
+            pauseBtn.textContent = 'Pause';
+            pauseBtn.classList.remove('btn-primary');
+            pauseBtn.classList.add('btn-secondary');
+        }
+    }
+    
+    async endGame() {
+        this.gameState.isPlaying = false;
+        
+        // Calculate actual time spent (total time minus remaining time)
+        const actualTimeSpent = this.gameState.totalTime - this.gameState.timeRemaining;
+        this.gameState.actualTimeSpent = actualTimeSpent;
+        
+        // Clear all timers
+        Object.values(this.timers).forEach(timer => {
+            if (timer) {
+                clearTimeout(timer);
+                clearInterval(timer);
+            }
+        });
+        
+        // Stop recording and send audio to backend
+        if (this.gameState.sessionId && this.isRecording) {
+            try {
+                await this.stopRecording();
+                
+                // Send audio to backend
+                const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                const formData = new FormData();
+                formData.append('audio', audioBlob, 'conductor_session.wav');
+                formData.append('sessionId', this.gameState.sessionId);
+                
+                const response = await fetch('/api/v1/games/conductor/end', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Failed to end session');
+                }
+                
+                const sessionData = await response.json();
+                console.log('Session ended:', sessionData);
+                
+                // Store session data for results
+                this.gameState.sessionData = sessionData;
+                
+            } catch (error) {
+                console.error('Error ending session:', error);
+            }
+        }
+        
+        // Show results
+        this.showResults();
+    }
+    
+    showResults() {
+        this.showScreen('results');
+        
+        // Clear any previously added dynamic content
+        this.clearResultsDisplay();
+
+        // Update initial stats display - use actual time spent instead of total time
+        const actualTimeSpent = this.gameState.actualTimeSpent || (this.gameState.totalTime - this.gameState.timeRemaining);
+        const actualMinutes = Math.floor(actualTimeSpent / 60);
+        const actualSeconds = actualTimeSpent % 60;
+        const durationDisplay = `${actualMinutes}:${actualSeconds.toString().padStart(2, '0')}`;
+        
+        document.getElementById('final-duration').textContent = durationDisplay;
+        document.getElementById('energy-changes').textContent = this.gameState.energyChanges;
+        document.getElementById('breath-count').textContent = this.gameState.breathCount;
+
+        // Show loading indicator
+        document.getElementById('evaluation-loading').classList.remove('hidden');
+
+        // Update View Analysis button link
+        const viewAnalysisBtn = document.getElementById('view-analysis-btn');
+        if (this.gameState.sessionId) {
+            viewAnalysisBtn.href = `conductor-analysis.html?sessionId=${this.gameState.sessionId}&gameType=conductor`;
+        } else {
+            viewAnalysisBtn.href = `conductor-analysis.html`; // Fallback
+        }
+        
+        // Start checking for evaluation completion
+        if (this.gameState.sessionId) {
+            this.checkEvaluationStatus();
+        }
+    }
+    
+    async checkEvaluationStatus() {
+        if (!this.gameState.sessionId) return;
+        
+        console.log(`[ConductorGame] Checking evaluation status for session: ${this.gameState.sessionId}`);
+        try {
+            const response = await fetch(`/api/v1/games/conductor/session/${this.gameState.sessionId}`);
+            if (!response.ok) {
+                throw new Error('Failed to get session status');
+            }
+            
+            const sessionData = await response.json();
+            console.log(`[ConductorGame] Session status received:`, sessionData.status, sessionData.evaluation ? 'with evaluation' : 'no evaluation');
+            
+            if (sessionData.status === 'evaluated' && sessionData.evaluation) {
+                // Evaluation is complete, hide loading indicator
+                document.getElementById('evaluation-loading').classList.add('hidden');
+            } else if (sessionData.status === 'completed' || sessionData.status === 'recording') {
+                // Still waiting for evaluation, check again in 2 seconds
+                console.log(`[ConductorGame] Evaluation not ready, re-checking in 2 seconds...`);
+                setTimeout(() => this.checkEvaluationStatus(), 2000);
+            } else {
+                console.warn(`[ConductorGame] Unexpected session status: ${sessionData.status}`);
+                document.getElementById('evaluation-loading').innerHTML = '<p style="color: orange;">Evaluation status unknown. Please check console for errors.</p>';
+            }
+        } catch (error) {
+            console.error('[ConductorGame] Error checking evaluation status:', error);
+            document.getElementById('evaluation-loading').innerHTML = '<p style="color: red;">Failed to load evaluation results. Please try again later.</p>';
+        }
+    }
+    
+
+    
+    clearResultsDisplay() {
+        // Reset loading indicator
+        const loadingIndicator = document.getElementById('evaluation-loading');
+        if (loadingIndicator) {
+            loadingIndicator.innerHTML = `
+                <p>Analyzing your performance...</p>
+                <div class="spinner"></div>
+            `;
+            loadingIndicator.classList.add('hidden');
+        }
+    }
+    
+    playAgain() {
+        // Clear any dynamic content from previous game
+        this.clearResultsDisplay();
+        
+        // Reset to same topic and duration
+        this.showScreen('setup');
+        
+        // Pre-select the same topic and duration
+        const topicSelect = document.getElementById('topic-select');
+        const durationSelect = document.getElementById('duration-select');
+        
+        if (this.gameState.topic) {
+            // Check if topic exists in options
+            let found = false;
+            for (let option of topicSelect.options) {
+                if (option.value === this.gameState.topic) {
+                    topicSelect.value = this.gameState.topic;
+                    found = true;
+                    break;
+                }
+            }
+            
+            if (!found) {
+                topicSelect.value = 'custom';
+                document.getElementById('custom-topic').value = this.gameState.topic;
+                document.getElementById('custom-topic-group').classList.remove('hidden');
+            }
+        }
+        
+        durationSelect.value = this.gameState.duration;
+    }
+    
+    backToSetup() {
+        // Clear any dynamic content from previous game
+        this.clearResultsDisplay();
+        
+        this.showScreen('setup');
+        
+        // Reset form
+        document.getElementById('topic-select').value = 'If money didn\'t exist...';
+        document.getElementById('custom-topic').value = '';
+        document.getElementById('custom-topic-group').classList.add('hidden');
+        document.getElementById('duration-select').value = '3';
+    }
+    
+    showScreen(screenName) {
+        // Hide all screens
+        document.querySelectorAll('.game-screen').forEach(screen => {
+            screen.classList.remove('active');
+        });
+        
+        // Show target screen
+        document.getElementById(`${screenName}-screen`).classList.add('active');
+        this.currentScreen = screenName;
+    }
+    
+    // Audio recording methods
+    async startRecording() {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.mediaRecorder = new MediaRecorder(stream);
+            this.audioChunks = [];
+            
+            this.mediaRecorder.ondataavailable = (event) => {
+                this.audioChunks.push(event.data);
+            };
+            
+            this.mediaRecorder.start();
+            this.isRecording = true;
+            console.log('Audio recording started');
+        } catch (error) {
+            console.error('Error starting audio recording:', error);
+            alert('Failed to start audio recording. Please allow microphone access.');
+        }
+    }
+    
+    async stopRecording() {
+        if (this.mediaRecorder && this.isRecording) {
+            return new Promise((resolve) => {
+                this.mediaRecorder.onstop = () => {
+                    this.isRecording = false;
+                    console.log('Audio recording stopped');
+                    resolve();
+                };
+                this.mediaRecorder.stop();
+                this.mediaRecorder.stream.getTracks().forEach(track => track.stop());
+            });
+        }
+    }
+    
+    // Utility method to format time
+    formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const remainingSeconds = seconds % 60;
+        return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    }
+}
+
+// Initialize the game when DOM is loaded
+document.addEventListener('DOMContentLoaded', () => {
+    window.conductorGameInstance = new ConductorGame();
+});
+
+// Add some additional utility functions for better user experience
+document.addEventListener('DOMContentLoaded', () => {
+    // Add keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.code === 'Space' && e.target.tagName !== 'INPUT' && e.target.tagName !== 'TEXTAREA') {
+            e.preventDefault();
+            if (window.conductorGameInstance && window.conductorGameInstance.currentScreen === 'game') {
+                window.conductorGameInstance.togglePause();
+            }
+        }
+        
+        if (e.code === 'Escape') {
+            if (window.conductorGameInstance && window.conductorGameInstance.currentScreen === 'game') {
+                window.conductorGameInstance.endGame();
+            }
+        }
+    });
+    
+    // Add visual feedback for energy changes
+    const energyNumber = document.getElementById('energy-number');
+    if (energyNumber) {
+        energyNumber.addEventListener('animationend', () => {
+            energyNumber.style.animation = '';
+        });
+    }
+    
+    // Add smooth transitions for screen changes
+    const gameScreens = document.querySelectorAll('.game-screen');
+    gameScreens.forEach(screen => {
+        screen.addEventListener('transitionend', () => {
+            if (screen.classList.contains('active')) {
+                screen.style.opacity = '1';
+            }
+        });
+    });
+});
+
+// Export for potential use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = ConductorGame;
+}

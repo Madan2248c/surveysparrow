@@ -1,0 +1,849 @@
+/* Analysis Screen Styles */
+.analysis-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 100vh;
+    padding: 2rem;
+    text-align: center;
+    animation: fadeIn 0.5s ease-out;
+}
+
+.analysis-header {
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.analysis-header h2 {
+    font-size: 2.5rem;
+    font-weight: 600;
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+}
+
+.analysis-subtitle {
+    color: #94A3B8;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+}
+
+/* Loading State */
+.loading-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 400px;
+}
+
+.loading-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(251, 191, 36, 0.3);
+    border-top: 4px solid #FBBF24;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 1rem;
+}
+
+.loading-text {
+    color: #94A3B8;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.processing-status {
+    color: #64748B;
+    font-size: 0.9rem;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Summary Section */
+.summary-section {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    padding: 2rem;
+    margin-bottom: 3rem;
+    width: 100%;
+    max-width: 800px;
+    backdrop-filter: blur(10px);
+}
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.summary-item {
+    text-align: center;
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 15px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.summary-value {
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: #FBBF24;
+    margin-bottom: 0.5rem;
+}
+
+.summary-label {
+    color: #94A3B8;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+/* Prompts Grid */
+.prompts-section {
+    width: 100%;
+    max-width: 1200px;
+}
+
+.prompts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.prompt-card {
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    padding: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.prompt-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px rgba(251, 191, 36, 0.2);
+    border-color: #FBBF24;
+}
+
+.prompt-card.processing {
+    border-color: #64748B;
+    opacity: 0.7;
+}
+
+.prompt-card.completed {
+    border-color: #10B981;
+}
+
+.prompt-number {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 0 auto 1rem;
+}
+
+.prompt-text {
+    color: #F8FAFC;
+    font-size: 1rem;
+    line-height: 1.5;
+    margin-bottom: 1rem;
+    font-weight: 500;
+}
+
+.prompt-status {
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+}
+
+.prompt-status.processing {
+    background: rgba(100, 116, 139, 0.2);
+    color: #94A3B8;
+}
+
+.prompt-status.completed {
+    background: rgba(16, 185, 129, 0.2);
+    color: #10B981;
+}
+
+/* Detailed Evaluation Modal */
+.evaluation-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    overflow-y: auto;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.evaluation-modal-content {
+    position: relative;
+    background: rgba(30, 41, 59, 0.95);
+    border: 2px solid rgba(251, 191, 36, 0.5);
+    border-radius: 20px;
+    padding: 2rem;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    animation: slideInUp 0.5s ease-out;
+}
+
+.evaluation-modal h3 {
+    color: #FBBF24;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.prompt-context {
+    background: rgba(30, 41, 59, 0.8);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid rgba(251, 191, 36, 0.3);
+}
+
+.prompt-label {
+    font-size: 0.9rem;
+    color: #94A3B8;
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.prompt-text-modal {
+    font-size: 1.1rem;
+    color: #F8FAFC;
+    font-weight: 500;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+.evaluation-scores {
+    margin-bottom: 2rem;
+}
+
+.score-item {
+    background: rgba(30, 41, 59, 0.6);
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.score-label {
+    display: block;
+    font-weight: 600;
+    color: #F8FAFC;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+}
+
+.score-value {
+    display: block;
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FBBF24;
+    margin-bottom: 0.5rem;
+}
+
+.score-feedback {
+    color: #94A3B8;
+    line-height: 1.5;
+    font-size: 0.95rem;
+}
+
+.close-modal-btn {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+    border: none;
+    padding: 1rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    width: 100%;
+    font-size: 1.1rem;
+}
+
+.close-modal-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+.close-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    background: none;
+    border: none;
+    color: #94A3B8;
+    font-size: 2rem;
+    font-weight: 300;
+    cursor: pointer;
+    width: 2rem;
+    height: 2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+}
+
+.close-btn:hover {
+    background: rgba(148, 163, 184, 0.2);
+    color: #F8FAFC;
+}
+
+/* Action Buttons */
+.action-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    margin-top: 2rem;
+}
+
+.action-btn {
+    padding: 1rem 2rem;
+    border: none;
+    border-radius: 25px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-size: 1rem;
+}
+
+.play-again-btn {
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+}
+
+.play-again-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.3);
+}
+
+.home-btn {
+    background: #334155;
+    color: #F8FAFC;
+}
+
+.home-btn:hover {
+    background: #475569;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .analysis-screen {
+        padding: 1rem;
+    }
+    
+    .analysis-header h2 {
+        font-size: 2rem;
+    }
+    
+    .summary-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .prompts-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .evaluation-modal-content {
+        padding: 1.5rem;
+        max-height: 95vh;
+    }
+    
+    .action-buttons {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .analysis-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .summary-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .summary-item {
+        padding: 1rem;
+    }
+    
+    .summary-value {
+        font-size: 2rem;
+    }
+    
+    .evaluation-modal-content {
+        padding: 1rem;
+        max-height: 98vh;
+    }
+    
+    .close-btn {
+        top: 0.5rem;
+        right: 0.5rem;
+        font-size: 1.5rem;
+    }
+}
+
+/* Conductor Analysis Specific Styles */
+.session-details {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.session-details h3 {
+    color: #FBBF24;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.details-grid {
+    display: grid;
+    gap: 1rem;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.detail-label {
+    font-weight: 600;
+    color: #F8FAFC;
+}
+
+.detail-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #FBBF24;
+}
+
+.evaluation-section {
+    margin: 2rem 0;
+    padding: 2rem;
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.evaluation-section h3 {
+    color: #FBBF24;
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.evaluation-grid {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.evaluation-item {
+    padding: 1.5rem;
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 15px;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+    transition: all 0.3s ease;
+}
+
+.evaluation-item:hover {
+    border-color: rgba(251, 191, 36, 0.5);
+    transform: translateY(-2px);
+}
+
+.evaluation-item h4 {
+    color: #FBBF24;
+    font-size: 1.3rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.evaluation-item.overall {
+    border: 2px solid rgba(251, 191, 36, 0.5);
+    background: rgba(251, 191, 36, 0.1);
+}
+
+.evaluation-item.overall h4 {
+    font-size: 1.5rem;
+    color: #FBBF24;
+}
+
+.score-display {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.score {
+    display: inline-block;
+    background: linear-gradient(135deg, #FBBF24, #F59E0B);
+    color: #1E293B;
+    padding: 0.5rem 1.5rem;
+    border-radius: 25px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    min-width: 80px;
+}
+
+.feedback {
+    color: #94A3B8;
+    line-height: 1.6;
+    font-size: 1rem;
+    margin: 0;
+}
+
+.error-state {
+    text-align: center;
+    padding: 3rem;
+    background: rgba(30, 41, 59, 0.8);
+    border: 2px solid rgba(239, 68, 68, 0.3);
+    border-radius: 20px;
+    backdrop-filter: blur(10px);
+}
+
+.error-state h3 {
+    color: #F87171;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.error-state p {
+    color: #94A3B8;
+    font-size: 1.1rem;
+    margin-bottom: 2rem;
+    line-height: 1.6;
+}
+
+/* Responsive Design for Conductor Analysis */
+@media (max-width: 768px) {
+    .session-details,
+    .evaluation-section {
+        padding: 1.5rem;
+        margin: 1rem 0;
+    }
+    
+    .session-details h3,
+    .evaluation-section h3 {
+        font-size: 1.5rem;
+    }
+    
+    .detail-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+    
+    .evaluation-item {
+        padding: 1rem;
+    }
+    
+    .evaluation-item h4 {
+        font-size: 1.1rem;
+    }
+    
+    .score {
+        font-size: 1rem;
+        padding: 0.4rem 1rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .session-details,
+    .evaluation-section {
+        padding: 1rem;
+    }
+    
+    .session-details h3,
+    .evaluation-section h3 {
+        font-size: 1.3rem;
+    }
+    
+    .evaluation-item h4 {
+        font-size: 1rem;
+    }
+    
+    .score {
+        font-size: 0.9rem;
+        padding: 0.3rem 0.8rem;
+    }
+    
+    .feedback {
+        font-size: 0.9rem;
+    }
+}
+
+/* New Summary Layout Styles */
+.summary-content {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    width: 100%;
+    align-items: start;
+}
+
+.performance-summary {
+    background: rgba(15, 23, 42, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+}
+
+.completion-header {
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.completion-header h3 {
+    color: #F8FAFC;
+    font-size: 1.8rem;
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.performance-summary h4 {
+    color: #FBBF24;
+    font-size: 1.3rem;
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.summary-breakdown {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.breakdown-item {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.breakdown-item:hover {
+    border-color: #FBBF24;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(251, 191, 36, 0.1);
+}
+
+.breakdown-item.stuck {
+    border-color: #EF4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.breakdown-item.stuck:hover {
+    border-color: #F87171;
+    box-shadow: 0 6px 20px rgba(239, 68, 68, 0.1);
+}
+
+.breakdown-label {
+    color: #94A3B8;
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.breakdown-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FBBF24;
+    line-height: 1.2;
+}
+
+.breakdown-item.stuck .breakdown-value {
+    color: #F87171;
+    font-size: 1.1rem;
+    line-height: 1.4;
+    font-weight: 600;
+}
+
+/* Audio Playback Section */
+.audio-playback-section {
+    background: rgba(15, 23, 42, 0.8);
+    border: 2px solid rgba(251, 191, 36, 0.3);
+    border-radius: 12px;
+    padding: 2rem;
+    height: 100%;
+}
+
+.audio-playback-section h4 {
+    color: #FBBF24;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.3rem;
+    font-weight: 600;
+}
+
+.audio-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.audio-item {
+    background: rgba(30, 41, 59, 0.8);
+    border: 1px solid rgba(251, 191, 36, 0.2);
+    border-radius: 12px;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.3s ease;
+}
+
+.audio-item:hover {
+    border-color: #FBBF24;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(251, 191, 36, 0.1);
+}
+
+.audio-label {
+    color: #FBBF24;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.audio-prompt {
+    color: #94A3B8;
+    font-style: italic;
+    margin-bottom: 1.5rem;
+    font-size: 1rem;
+    line-height: 1.5;
+    text-align: center;
+    padding: 0 0.5rem;
+}
+
+.audio-item audio {
+    width: 100%;
+    height: 45px;
+    border-radius: 8px;
+    background: rgba(15, 23, 42, 0.6);
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Responsive adjustments for new layout */
+@media (max-width: 1024px) {
+    .summary-content {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .summary-content {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .performance-summary,
+    .audio-playback-section {
+        padding: 1.5rem;
+    }
+    
+    .completion-header h3 {
+        font-size: 1.6rem;
+    }
+    
+    .breakdown-value {
+        font-size: 1.8rem;
+    }
+    
+    .breakdown-item {
+        padding: 1.2rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .completion-header h3 {
+        font-size: 1.4rem;
+    }
+    
+    .breakdown-value {
+        font-size: 1.5rem;
+    }
+    
+    .breakdown-item {
+        padding: 1rem;
+    }
+    
+    .breakdown-item.stuck .breakdown-value {
+        font-size: 1rem;
+    }
+    
+    .performance-summary,
+    .audio-playback-section {
+        padding: 1rem;
+    }
+    
+    .audio-item {
+        padding: 1rem;
+    }
+    
+    .audio-label {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .audio-prompt {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    .audio-item audio {
+        height: 40px;
+    }
+}
