@@ -21,14 +21,7 @@ window.selectDifficulty = function(difficulty) {
         // Update session storage
         sessionStorage.setItem('selectedPromptCount', selectedPromptCount);
         sessionStorage.setItem('selectedWordInterval', selectedWordInterval);
-        
-        // Update UI displays
-        if (currentGame === 'triple-step') {
-            document.querySelector('.prompt-count-value').textContent = `${selectedPromptCount} words`;
-            document.querySelector('.word-interval-value').textContent = `${selectedWordInterval} seconds between words`;
-        } else if (currentGame === 'rapid-fire') {
-            document.querySelector('.prompt-count-value').textContent = `${selectedPromptCount} prompts`;
-        }
+    // UI displays for prompt count / interval are intentionally removed to avoid redundancy
     }
     
     // Update UI
@@ -160,17 +153,19 @@ function createSetupScreen() {
     const game = gameData[currentGame];
     
     let setupHTML = `
-        <div class="setup-screen">
-            <div class="setup-header">
-                <h1 class="setup-title">${game.title}</h1>
-                <p class="setup-instructions">${game.instructions}</p>
-            </div>
+        <div class="setup-screen setup-large">
+            <div class="setup-container">
+                <div class="setup-header">
+                    <h1 class="setup-title">${game.title}</h1>
+                    <p class="setup-instructions">${game.instructions}</p>
+                </div>
+                <div class="setup-grid">
     `;
     
     // Add difficulty selection for rapid-fire and triple-step games
     if (currentGame === 'rapid-fire' || currentGame === 'triple-step') {
         setupHTML += `
-            <div class="difficulty-section">
+            <div class="setup-card difficulty-section">
                 <label class="difficulty-label">Select Difficulty Level</label>
                 <div class="difficulty-options">
         `;
@@ -188,25 +183,15 @@ function createSetupScreen() {
         setupHTML += `
                 </div>
             </div>
-            
-            <div class="prompt-count-section">
-                <label class="prompt-count-label">${currentGame === 'rapid-fire' ? 'Number of Prompts' : 'Number of Words'}</label>
-                <div class="prompt-count-value">${selectedPromptCount} ${currentGame === 'rapid-fire' ? 'prompts' : 'words'}</div>
-            </div>
         `;
         
         // Add word interval display for triple-step game
         if (currentGame === 'triple-step') {
-            setupHTML += `
-            <div class="word-interval-section">
-                <label class="word-interval-label">Word Interval</label>
-                <div class="word-interval-value">${selectedWordInterval} seconds between words</div>
-            </div>
-        `;
-    }
+            // Interval is determined by difficulty; redundant display removed
+        }
     
     setupHTML += `
-            <div class="timer-section">
+            <div class="setup-card timer-section">
                 <label class="timer-label">Set Timer Duration</label>
                 <input type="range" 
                        class="timer-slider" 
@@ -216,9 +201,12 @@ function createSetupScreen() {
                        oninput="updateTimer(this.value)">
                 <div class="timer-value">${currentTimer} seconds</div>
             </div>
-            
+        </div>
+        <div class="setup-actions">
             <button class="ready-btn" onclick="startGame()">Ready to Start</button>
         </div>
+      </div>
+    </div>
     `;
     
     document.querySelector('.container').innerHTML = setupHTML;

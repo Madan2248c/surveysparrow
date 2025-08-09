@@ -63,6 +63,27 @@ const tripleStepEvaluationSchema = {
         areasForImprovement: { type: "array", items: { type: "string" }, description: "List of areas for improvement" }
       },
       required: ["score", "feedback", "strengths", "areasForImprovement"]
+    },
+    wordVerification: {
+      type: "object",
+      properties: {
+        perWord: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              word: { type: "string" },
+              presentInTranscript: { type: "boolean" },
+              presentInAudioLikely: { type: "boolean" },
+              matchConfidence: { type: "number" },
+              exampleSentence: { type: "string" }
+            },
+            required: ["word", "presentInTranscript", "presentInAudioLikely", "matchConfidence"]
+          }
+        },
+        integratedWordsDetected: { type: "array", items: { type: "string" } },
+        missedWordsDetected: { type: "array", items: { type: "string" } }
+      }
     }
   },
   required: ["primary", "secondary", "tertiary", "recovery", "overall"]
@@ -206,57 +227,35 @@ const processTripleStepEvaluation = async (request) => {
 
     const evaluationPrompt = `
       You are an expert public speaking coach evaluating a Triple Step speech game performance.
-      Analyze the provided audio file and evaluate the speaker's performance based on the following criteria.
+      Analyze the provided audio file and the full transcript, then produce JSON per the response schema.
 
-      **Silent Audio Rule:** If the audio is silent or contains no discernible speech, you MUST provide an evaluation with all scores set to 0 and feedback indicating that no speech was detected.
+      Silent Audio Rule: If no discernible speech, set all scores to 0 with feedback indicating no speech.
 
-      **Game Context:**
+      Game Context:
       - Main Topic: "${request.topic}"
       - Total Words Given: ${request.wordList.length}
-      - Words Successfully Integrated: ${request.integratedWords.length}
-      - Words Missed: ${request.missedWords.length}
+      - Words Successfully Integrated (client): ${request.integratedWords.length}
+      - Words Missed (client): ${request.missedWords.length}
       - Total Time Allocated: ${request.totalTime} seconds
       - Actual Time Spent: ${request.actualTime} seconds
       - Completed Early: ${request.completedEarly ? 'Yes' : 'No'}
-      - Speech Transcription: "${request.transcription}"
+      - Full Transcript: "${request.transcription}"
 
-      **Word List Given to Speaker:**
+      Word List Given to Speaker:
       ${request.wordList.map((word, index) => `${index + 1}. ${word}`).join('\n')}
 
-      **Successfully Integrated Words:**
-      ${request.integratedWords.length > 0 ? request.integratedWords.join(', ') : 'None'}
+      Task: In addition to the scoring criteria, verify each word using BOTH the transcript and any phonetic cues you infer from audio. Build a wordVerification object:
+      - perWord: for each given word, include { word, presentInTranscript, presentInAudioLikely, matchConfidence (0-1), exampleSentence? from transcript if available }.
+      - integratedWordsDetected: words you believe were truly integrated.
+      - missedWordsDetected: words likely not integrated.
 
-      **Missed Words:**
-      ${request.missedWords.length > 0 ? request.missedWords.join(', ') : 'None'}
+      Be concise, specific, and actionable.
 
-      **Evaluation Criteria:**
-
-      1. **PRIMARY - Word Integration Success (1-10):**
-         - Did the speaker successfully integrate the random words within the time limit?
-         - Consider timing, word detection, and integration attempts
-         - Score based on percentage of words successfully integrated
-
-      2. **SECONDARY - Integration Smoothness (1-10):**
-         - How naturally and smoothly were the words integrated?
-         - Did they flow naturally or feel forced/awkward?
-         - Consider context, sentence structure, and speech flow
-
-      3. **TERTIARY - Topic Coherence (1-10):**
-         - Did the speaker maintain focus on the main topic?
-         - Was there a clear throughline despite distractions?
-         - Did the random words disrupt or enhance the message?
-
-      4. **RECOVERY - Handling Difficult Words (1-10):**
-         - How well did they handle words they couldn't integrate smoothly?
-         - Did they show adaptability and recovery strategies?
-         - Consider confidence, flow maintenance, and problem-solving
-
-      **Important Guidelines:**
-      - Focus on speech delivery quality, not content accuracy
-      - Consider the challenge of integrating random words into coherent speech
-      - Evaluate adaptability and confidence under pressure
-      - Provide specific, actionable feedback for each criterion
-      - Consider the speaker's recovery from missed or awkward integrations
+      Evaluation Criteria:
+      1) PRIMARY - Word Integration Success (1-10)
+      2) SECONDARY - Integration Smoothness (1-10)
+      3) TERTIARY - Topic Coherence (1-10)
+      4) RECOVERY - Handling Difficult Words (1-10)
     `;
 
     console.log(`[processTripleStepEvaluation] Calling Gemini API for session ${request.sessionId}`);

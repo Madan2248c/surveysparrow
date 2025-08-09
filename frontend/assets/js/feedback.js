@@ -231,6 +231,39 @@ function createTripleStepFeedback() {
                         </div>
                     </div>
                 </div>
+                ${evaluation.wordVerification ? `
+                <div class="word-verification">
+                    <h4>Word Verification</h4>
+                    <div class="verification-summary">
+                        <div><strong>Detected Integrated:</strong> ${(evaluation.wordVerification.integratedWordsDetected || []).join(', ') || 'None'}</div>
+                        <div><strong>Likely Missed:</strong> ${(evaluation.wordVerification.missedWordsDetected || []).join(', ') || 'None'}</div>
+                    </div>
+                    <div class="per-word-table">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Word</th>
+                                    <th>In Transcript</th>
+                                    <th>Likely In Audio</th>
+                                    <th>Confidence</th>
+                                    <th>Example</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${(evaluation.wordVerification.perWord || []).map(w => `
+                                    <tr>
+                                        <td>${w.word}</td>
+                                        <td>${w.presentInTranscript ? 'Yes' : 'No'}</td>
+                                        <td>${w.presentInAudioLikely ? 'Yes' : 'No'}</td>
+                                        <td>${Math.round((w.matchConfidence || 0) * 100)}%</td>
+                                        <td>${w.exampleSentence ? w.exampleSentence : '-'}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                ` : ''}
             </div>
             ` : `
             <div class="performance-tips">

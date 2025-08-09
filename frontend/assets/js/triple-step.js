@@ -14,9 +14,16 @@ class TripleStepGame {
         this.isListening = false;
         this.recognition = null;
         this.transcription = '';
+        this.latestInterim = '';
+        this.currentWordTranscriptStart = 0;
+        this.wordResolved = false;
         this.integratedWords = [];
-        this.missedWords = [];
+        this.missedWords = []; 
         this.gameState = 'setup'; // setup, playing, finished
+        this.mediaStream = null;
+        this.mediaRecorder = null;
+        this.recordedChunks = [];
+        this.finalAudioBlob = null;
         
         this.initializeSpeechRecognition();
         this.loadGameData();
@@ -29,6 +36,7 @@ class TripleStepGame {
             this.recognition.continuous = true;
             this.recognition.interimResults = true;
             this.recognition.lang = 'en-US';
+            this.recognition.maxAlternatives = 1;
 
             this.recognition.onstart = () => {
                 this.isListening = true;
@@ -48,7 +56,18 @@ class TripleStepGame {
                     }
                 }
 
-                this.transcription += finalTranscript;
+                if (finalTranscript) {
+                    // Normalize spacing when appending
+                    const trimmed = finalTranscript.trim();
+                    if (trimmed.length > 0) {
+                        if (this.transcription.length > 0 && !this.transcription.endsWith(' ')) {
+                            this.transcription += ' ';
+                        }
+                        this.transcription += trimmed + ' ';
+                    }
+                }
+
+                this.latestInterim = interimTranscript;
                 this.updateTranscription(interimTranscript);
                 this.checkWordIntegration();
             };
@@ -175,6 +194,8 @@ class TripleStepGame {
                 
                 <div class="live-transcription" id="transcription">
                     <div class="transcription-placeholder">Your speech will appear here...</div>
+                    <div class="final-text" id="finalTranscriptionText"></div>
+                    <div class="interim-text" id="interimTranscriptionText"></div>
                 </div>
                 
                 <button class="next-btn" id="startBtn" onclick="game.startGame()">Start Speaking</button>
@@ -189,12 +210,21 @@ class TripleStepGame {
         this.gameState = 'playing';
         this.gameStartTime = Date.now();
         this.currentWordIndex = 0;
+        this.currentWordTranscriptStart = 0;
+        this.transcription = '';
+        this.latestInterim = '';
+        this.finalAudioBlob = null;
+        this.integratedWords = [];
+        this.missedWords = [];
         
         // Start speech recognition
         if (this.recognition) {
             this.recognition.start();
         }
         
+        // Start real microphone recording
+        this.startRecording();
+
         // Start speech timer
         this.speechTimer = setInterval(() => {
             this.updateSpeechTimer();
@@ -228,16 +258,22 @@ class TripleStepGame {
             <div class="integration-timer" id="integrationTimer">5</div>
         `;
         
+        // Mark transcript start index for this word
+        this.currentWordTranscriptStart = this.transcription.length;
+        this.wordResolved = false;
+
         // Start integration timer
+        clearInterval(this.integrationTimer);
         let timeLeft = this.integrationTime;
         this.integrationTimer = setInterval(() => {
+            if (this.wordResolved) return; // do nothing once resolved
             timeLeft--;
-            document.getElementById('integrationTimer').textContent = timeLeft;
-            
+            const timerEl = document.getElementById('integrationTimer');
+            if (timerEl) timerEl.textContent = timeLeft;
             if (timeLeft <= 2) {
-                document.getElementById('integrationTimer').classList.add('urgent');
+                const t = document.getElementById('integrationTimer');
+                if (t) t.classList.add('urgent');
             }
-            
             if (timeLeft <= 0) {
                 this.missWord();
             }
@@ -250,20 +286,28 @@ class TripleStepGame {
     checkWordIntegration() {
         if (this.currentWordIndex >= this.wordList.length) return;
         
+        if (this.wordResolved) return;
+
         const currentWord = this.wordList[this.currentWordIndex];
         const wordLower = currentWord.toLowerCase();
-        
-        // Check if the word was spoken
-        if (this.transcription.toLowerCase().includes(wordLower)) {
+        // Check only within the transcript window since this word was shown, plus latest interim
+        const windowText = (
+            this.transcription.slice(this.currentWordTranscriptStart) + ' ' + (this.latestInterim || '')
+        ).toLowerCase();
+
+        const regex = new RegExp(`\\b${this.escapeRegex(wordLower)}\\b`, 'i');
+        if (regex.test(windowText)) {
             this.integrateWord();
         }
     }
 
     integrateWord() {
+        if (this.wordResolved) return;
+        this.wordResolved = true;
         clearInterval(this.integrationTimer);
         
         const currentWord = this.wordList[this.currentWordIndex];
-        this.integratedWords.push(currentWord);
+        if (!this.integratedWords.includes(currentWord)) this.integratedWords.push(currentWord);
         
         // Update word display
         const wordElement = document.getElementById('currentWord');
@@ -276,16 +320,19 @@ class TripleStepGame {
         
         // Move to next word after the specified interval
         setTimeout(() => {
+            if (this.gameState !== 'playing') return;
             this.currentWordIndex++;
             this.showNextWord();
         }, this.wordInterval * 1000);
     }
 
     missWord() {
+        if (this.wordResolved) return;
+        this.wordResolved = true;
         clearInterval(this.integrationTimer);
         
         const currentWord = this.wordList[this.currentWordIndex];
-        this.missedWords.push(currentWord);
+        if (!this.missedWords.includes(currentWord)) this.missedWords.push(currentWord);
         
         // Update word display
         const wordElement = document.getElementById('currentWord');
@@ -298,6 +345,7 @@ class TripleStepGame {
         
         // Move to next word after the specified interval
         setTimeout(() => {
+            if (this.gameState !== 'playing') return;
             this.currentWordIndex++;
             this.showNextWord();
         }, this.wordInterval * 1000);
@@ -325,6 +373,10 @@ class TripleStepGame {
         }
     }
 
+    escapeRegex(text) {
+        return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    }
+
     updateSpeechTimer() {
         const elapsed = Math.floor((Date.now() - this.gameStartTime) / 1000);
         const remaining = this.totalTime - elapsed;
@@ -340,31 +392,13 @@ class TripleStepGame {
     updateTranscription(interimText) {
         const transcriptionElement = document.getElementById('transcription');
         const placeholder = transcriptionElement.querySelector('.transcription-placeholder');
-        
-        if (placeholder) {
-            placeholder.remove();
-        }
-        
-        // Remove existing interim text
-        const existingInterim = transcriptionElement.querySelector('.interim-text');
-        if (existingInterim) {
-            existingInterim.remove();
-        }
-        
-        // Add current transcription
-        if (this.transcription) {
-            const finalText = document.createElement('div');
-            finalText.textContent = this.transcription;
-            transcriptionElement.appendChild(finalText);
-        }
-        
-        // Add interim text
-        if (interimText) {
-            const interimElement = document.createElement('div');
-            interimElement.className = 'interim-text';
-            interimElement.textContent = interimText;
-            transcriptionElement.appendChild(interimElement);
-        }
+        if (placeholder) placeholder.remove();
+
+        const finalDiv = document.getElementById('finalTranscriptionText');
+        const interimDiv = document.getElementById('interimTranscriptionText');
+
+        if (finalDiv) finalDiv.textContent = this.transcription.trim();
+        if (interimDiv) interimDiv.textContent = (interimText || '').trim();
         
         transcriptionElement.classList.add('listening');
     }
@@ -403,6 +437,38 @@ class TripleStepGame {
         });
     }
 
+    async startRecording() {
+        try {
+            this.mediaStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+            this.recordedChunks = [];
+            this.mediaRecorder = new MediaRecorder(this.mediaStream, { mimeType: 'audio/webm;codecs=opus' });
+            this.mediaRecorder.ondataavailable = (e) => {
+                if (e.data && e.data.size > 0) this.recordedChunks.push(e.data);
+            };
+            this.mediaRecorder.start(250);
+        } catch (err) {
+            console.error('Error starting audio recording:', err);
+        }
+    }
+
+    async stopRecording() {
+        return new Promise((resolve) => {
+            if (!this.mediaRecorder) {
+                resolve(null);
+                return;
+            }
+            this.mediaRecorder.onstop = () => {
+                const blob = new Blob(this.recordedChunks, { type: 'audio/webm' });
+                this.finalAudioBlob = blob;
+                if (this.mediaStream) {
+                    this.mediaStream.getTracks().forEach(t => t.stop());
+                }
+                resolve(blob);
+            };
+            this.mediaRecorder.stop();
+        });
+    }
+
     async endGame() {
         this.gameState = 'finished';
         
@@ -414,6 +480,9 @@ class TripleStepGame {
         if (this.recognition) {
             this.recognition.stop();
         }
+
+        // Stop microphone recording and finalize blob
+        await this.stopRecording();
         
         // Calculate results
         const totalWords = this.wordList.length;
@@ -453,6 +522,9 @@ class TripleStepGame {
                 <p>Analyzing your speech...</p>
             </div>
         `;
+
+        // Global processing overlay while waiting for backend analysis
+        this.showProcessingOverlay();
         
         // Update buttons
         document.getElementById('endBtn').style.display = 'none';
@@ -484,9 +556,11 @@ class TripleStepGame {
             document.getElementById('startBtn').style.display = 'block';
             
             document.getElementById('microphoneStatus').textContent = 'Analysis complete!';
+            this.hideProcessingOverlay();
             
         } catch (error) {
             console.error('Error sending evaluation request:', error);
+            this.hideProcessingOverlay();
             
             // Show error message but still allow viewing basic results
             wordContainer.innerHTML = `
@@ -517,93 +591,63 @@ class TripleStepGame {
         return `${mins}:${secs.toString().padStart(2, '0')}`;
     }
 
+    showProcessingOverlay() {
+        const existing = document.getElementById('processingOverlay');
+        if (existing) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'processingOverlay';
+        overlay.className = 'processing-overlay';
+        overlay.innerHTML = `
+            <div class="processing-modal">
+                <div class="processing-spinner"></div>
+                <div class="processing-title">Analyzing your speech</div>
+                <div class="processing-subtitle processing-dots">Please wait</div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+
+    hideProcessingOverlay() {
+        const overlay = document.getElementById('processingOverlay');
+        if (overlay) overlay.remove();
+    }
+
     async sendEvaluationRequest(sessionId, actualTime) {
         try {
-            // Create a more realistic placeholder audio blob
-            // This creates a 2-second audio clip with a simple tone
-            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
-            const oscillator = audioContext.createOscillator();
-            const gainNode = audioContext.createGain();
-            const mediaStreamDestination = audioContext.createMediaStreamDestination();
-            
-            oscillator.connect(gainNode);
-            gainNode.connect(mediaStreamDestination);
-            
-            oscillator.frequency.setValueAtTime(440, audioContext.currentTime); // A4 note
-            oscillator.type = 'sine';
-            
-            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 2);
-            
-            const mediaRecorder = new MediaRecorder(mediaStreamDestination.stream, {
-                mimeType: 'audio/webm;codecs=opus'
+            const audioBlob = this.finalAudioBlob;
+            if (!audioBlob) {
+                throw new Error('No recorded audio available');
+            }
+
+            const formData = new FormData();
+            formData.append('audio', audioBlob, 'speech.webm');
+            formData.append('sessionId', sessionId);
+            formData.append('topic', this.currentTopic);
+            formData.append('wordList', JSON.stringify(this.wordList));
+            formData.append('integratedWords', JSON.stringify(this.integratedWords));
+            formData.append('missedWords', JSON.stringify(this.missedWords));
+            formData.append('transcription', this.transcription.trim());
+            formData.append('totalTime', this.totalTime);
+            formData.append('actualTime', actualTime);
+            formData.append('completedEarly', actualTime < this.totalTime);
+
+            const response = await fetch('/api/v1/games/triple-step/evaluate', {
+                method: 'POST',
+                body: formData
             });
-            
-            const chunks = [];
-            
-            return new Promise((resolve, reject) => {
-                mediaRecorder.ondataavailable = (event) => {
-                    chunks.push(event.data);
-                };
-                
-                mediaRecorder.onstop = async () => {
-                    try {
-                        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
-                        
-                        // Create FormData for the request
-                        const formData = new FormData();
-                        formData.append('audio', audioBlob, 'speech.webm');
-                        formData.append('sessionId', sessionId);
-                        formData.append('topic', this.currentTopic);
-                        formData.append('wordList', JSON.stringify(this.wordList));
-                        formData.append('integratedWords', JSON.stringify(this.integratedWords));
-                        formData.append('missedWords', JSON.stringify(this.missedWords));
-                        formData.append('transcription', this.transcription);
-                        formData.append('totalTime', this.totalTime);
-                        formData.append('actualTime', actualTime);
-                        formData.append('completedEarly', actualTime < this.totalTime);
-                        
-                        // Send evaluation request
-                        const response = await fetch('/api/v1/games/triple-step/evaluate', {
-                            method: 'POST',
-                            body: formData
-                        });
-                        
-                        if (!response.ok) {
-                            throw new Error(`HTTP error! status: ${response.status}`);
-                        }
-                        
-                        const result = await response.json();
-                        console.log('Evaluation result:', result);
-                        
-                        // Store evaluation result in session storage
-                        const currentResults = JSON.parse(sessionStorage.getItem('tripleStepResults'));
-                        currentResults.evaluation = result.evaluation;
-                        sessionStorage.setItem('tripleStepResults', JSON.stringify(currentResults));
-                        
-                        resolve(result);
-                    } catch (error) {
-                        console.error('Error in mediaRecorder.onstop:', error);
-                        reject(error);
-                    }
-                };
-                
-                mediaRecorder.onerror = (error) => {
-                    console.error('MediaRecorder error:', error);
-                    reject(error);
-                };
-                
-                // Start recording
-                oscillator.start();
-                mediaRecorder.start();
-                
-                // Stop after 2 seconds
-                setTimeout(() => {
-                    oscillator.stop();
-                    mediaRecorder.stop();
-                }, 2000);
-            });
-            
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            const result = await response.json();
+            console.log('Evaluation result:', result);
+
+            const currentResults = JSON.parse(sessionStorage.getItem('tripleStepResults'));
+            currentResults.evaluation = result.evaluation;
+            sessionStorage.setItem('tripleStepResults', JSON.stringify(currentResults));
+
+            return result;
         } catch (error) {
             console.error('Error in sendEvaluationRequest:', error);
             throw error;
