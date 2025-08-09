@@ -3,7 +3,62 @@ let currentGame = '';
 let currentTimer = 30;
 let selectedDifficulty = 'medium';
 let selectedPromptCount = 5;
+let selectedWordInterval = 30;
 let gameData = {};
+
+// Make functions globally available
+window.selectDifficulty = function(difficulty) {
+    selectedDifficulty = difficulty;
+    sessionStorage.setItem('selectedDifficulty', difficulty);
+    
+    // Update values based on difficulty
+    const game = gameData[currentGame];
+    if (game.difficulties && game.difficulties[difficulty]) {
+        const difficultyData = game.difficulties[difficulty];
+        selectedPromptCount = difficultyData.wordCount || difficultyData.promptCount || 5;
+        selectedWordInterval = difficultyData.interval || 30;
+        
+        // Update session storage
+        sessionStorage.setItem('selectedPromptCount', selectedPromptCount);
+        sessionStorage.setItem('selectedWordInterval', selectedWordInterval);
+        
+        // Update UI displays
+        if (currentGame === 'triple-step') {
+            document.querySelector('.prompt-count-value').textContent = `${selectedPromptCount} words`;
+            document.querySelector('.word-interval-value').textContent = `${selectedWordInterval} seconds between words`;
+        } else if (currentGame === 'rapid-fire') {
+            document.querySelector('.prompt-count-value').textContent = `${selectedPromptCount} prompts`;
+        }
+    }
+    
+    // Update UI
+    document.querySelectorAll('.difficulty-option').forEach(option => {
+        option.classList.remove('selected');
+    });
+    event.target.closest('.difficulty-option').classList.add('selected');
+};
+
+// These functions are no longer needed since values are set by difficulty selection
+
+window.updateTimer = function(value) {
+    currentTimer = parseInt(value);
+    sessionStorage.setItem('currentTimer', currentTimer);
+    document.querySelector('.timer-value').textContent = `${currentTimer} seconds`;
+};
+
+window.startGame = function() {
+    // Store additional settings for triple-step game
+    if (currentGame === 'triple-step') {
+        sessionStorage.setItem('selectedWordInterval', selectedWordInterval);
+    }
+    
+    // Navigate to game page
+    if (currentGame === 'triple-step') {
+        window.location.href = 'triple-step.html';
+    } else {
+        window.location.href = `game.html?game=${currentGame}`;
+    }
+};
 
 // Initialize setup page
 document.addEventListener('DOMContentLoaded', function() {
@@ -22,7 +77,16 @@ document.addEventListener('DOMContentLoaded', function() {
     // Initialize state from session storage or defaults
     currentTimer = parseInt(sessionStorage.getItem('currentTimer')) || gameData[currentGame].defaultTimer;
     selectedDifficulty = sessionStorage.getItem('selectedDifficulty') || 'medium';
-    selectedPromptCount = parseInt(sessionStorage.getItem('selectedPromptCount')) || gameData[currentGame].defaultPrompts || 5;
+    
+    // Set values based on difficulty level
+    const difficultyData = gameData[currentGame].difficulties?.[selectedDifficulty];
+    if (difficultyData) {
+        selectedPromptCount = difficultyData.wordCount || difficultyData.promptCount || 5;
+        selectedWordInterval = difficultyData.interval || 30;
+    } else {
+        selectedPromptCount = parseInt(sessionStorage.getItem('selectedPromptCount')) || gameData[currentGame].defaultPrompts || gameData[currentGame].defaultWords || 5;
+        selectedWordInterval = parseInt(sessionStorage.getItem('selectedWordInterval')) || gameData[currentGame].defaultInterval || 30;
+    }
     
     // Create setup screen
     createSetupScreen();
@@ -55,10 +119,39 @@ function loadGameData() {
         },
         'triple-step': {
             title: 'Triple Step',
-            instructions: 'Structure your response in three parts: introduction, development, and conclusion. Build compelling narratives.',
-            minTimer: 45,
-            maxTimer: 180,
-            defaultTimer: 90
+            instructions: 'Give a speech on a topic while smoothly integrating random words that appear on screen. Maintain your message throughline despite distractions.',
+            minTimer: 60,
+            maxTimer: 300,
+            defaultTimer: 150,
+            minWords: 4,
+            maxWords: 8,
+            defaultWords: 6,
+            minInterval: 20,
+            maxInterval: 40,
+            defaultInterval: 30,
+            difficulties: {
+                easy: {
+                    name: 'Novice',
+                    description: '4 easy words, 30-second intervals',
+                    wordCount: 4,
+                    interval: 30,
+                    wordTypes: ['objects', 'emotions', 'places']
+                },
+                medium: {
+                    name: 'Intermediate', 
+                    description: '6 mixed words, 20-second intervals',
+                    wordCount: 6,
+                    interval: 20,
+                    wordTypes: ['objects', 'emotions', 'places', 'actions']
+                },
+                hard: {
+                    name: 'Advanced',
+                    description: '8 abstract concepts, random timing',
+                    wordCount: 8,
+                    interval: 15,
+                    wordTypes: ['objects', 'emotions', 'places', 'actions', 'concepts']
+                }
+            }
         }
     };
 }
@@ -74,8 +167,8 @@ function createSetupScreen() {
             </div>
     `;
     
-    // Add difficulty selection for rapid-fire game
-    if (currentGame === 'rapid-fire') {
+    // Add difficulty selection for rapid-fire and triple-step games
+    if (currentGame === 'rapid-fire' || currentGame === 'triple-step') {
         setupHTML += `
             <div class="difficulty-section">
                 <label class="difficulty-label">Select Difficulty Level</label>
@@ -97,14 +190,17 @@ function createSetupScreen() {
             </div>
             
             <div class="prompt-count-section">
-                <label class="prompt-count-label">Number of Prompts</label>
-                <input type="range" 
-                       class="prompt-count-slider" 
-                       min="${game.minPrompts}" 
-                       max="${game.maxPrompts}" 
-                       value="${selectedPromptCount}"
-                       oninput="updatePromptCount(this.value)">
-                <div class="prompt-count-value">${selectedPromptCount} prompts</div>
+                <label class="prompt-count-label">${currentGame === 'rapid-fire' ? 'Number of Prompts' : 'Number of Words'}</label>
+                <div class="prompt-count-value">${selectedPromptCount} ${currentGame === 'rapid-fire' ? 'prompts' : 'words'}</div>
+            </div>
+        `;
+        
+        // Add word interval display for triple-step game
+        if (currentGame === 'triple-step') {
+            setupHTML += `
+            <div class="word-interval-section">
+                <label class="word-interval-label">Word Interval</label>
+                <div class="word-interval-value">${selectedWordInterval} seconds between words</div>
             </div>
         `;
     }
@@ -128,30 +224,4 @@ function createSetupScreen() {
     document.querySelector('.container').innerHTML = setupHTML;
 }
 
-function selectDifficulty(difficulty) {
-    selectedDifficulty = difficulty;
-    sessionStorage.setItem('selectedDifficulty', difficulty);
-    
-    // Update UI
-    document.querySelectorAll('.difficulty-option').forEach(option => {
-        option.classList.remove('selected');
-    });
-    event.target.closest('.difficulty-option').classList.add('selected');
-}
-
-function updatePromptCount(value) {
-    selectedPromptCount = parseInt(value);
-    sessionStorage.setItem('selectedPromptCount', selectedPromptCount);
-    document.querySelector('.prompt-count-value').textContent = `${selectedPromptCount} prompts`;
-}
-
-function updateTimer(value) {
-    currentTimer = parseInt(value);
-    sessionStorage.setItem('currentTimer', currentTimer);
-    document.querySelector('.timer-value').textContent = `${currentTimer} seconds`;
-}
-
-function startGame() {
-    // Navigate to game page
-    window.location.href = `game.html?game=${currentGame}`;
 }

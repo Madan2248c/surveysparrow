@@ -3,6 +3,7 @@ const express = require('express');
 const multer = require('multer');
 const gameController = require('./gameController');
 const conductorController = require('./conductorController');
+const tripleStepController = require('./tripleStepController');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -51,6 +52,11 @@ app.get('/conductor-analysis', (req, res) => {
   res.sendFile('conductor-analysis.html', { root: '../frontend' });
 });
 
+// Route for triple step page
+app.get('/triple-step', (req, res) => {
+  res.sendFile('triple-step.html', { root: '../frontend' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
@@ -69,6 +75,12 @@ app.post('/api/v1/games/conductor/end', upload.single('audio'), conductorControl
 app.get('/api/v1/games/conductor/session/:sessionId', conductorController.getConductorSessionStatus);
 app.get('/api/v1/games/conductor/audio/:sessionId', conductorController.serveConductorAudio); // Audio file endpoint
 app.get('/api/v1/debug/conductor-state', conductorController.debugConductorState); // Debug endpoint
+
+// Triple Step Game API routes
+app.post('/api/v1/games/triple-step/evaluate', upload.single('audio'), tripleStepController.evaluateTripleStep);
+app.get('/api/v1/games/triple-step/session/:sessionId', tripleStepController.getTripleStepSessionStatus);
+app.get('/api/v1/games/triple-step/audio/:sessionId', tripleStepController.serveTripleStepAudioFile); // Audio file endpoint
+app.get('/api/v1/debug/triple-step-state', tripleStepController.debugTripleStepState); // Debug endpoint
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
