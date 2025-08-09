@@ -67,6 +67,7 @@ app.post('/api/v1/games/conductor/energy-change', conductorController.recordEner
 app.post('/api/v1/games/conductor/breath-moment', conductorController.recordBreathMoment);
 app.post('/api/v1/games/conductor/end', upload.single('audio'), conductorController.endConductorSession);
 app.get('/api/v1/games/conductor/session/:sessionId', conductorController.getConductorSessionStatus);
+app.get('/api/v1/games/conductor/audio/:sessionId', conductorController.serveConductorAudio); // Audio file endpoint
 app.get('/api/v1/debug/conductor-state', conductorController.debugConductorState); // Debug endpoint
 
 app.listen(PORT, () => {
