@@ -1,0 +1,618 @@
+/* Analytics Dashboard Styles - aligned with global neon/glass theme */
+
+.analytics-container { margin-top: 1rem; }
+
+.back-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 40;
+}
+
+.analytics-header { 
+  text-align: center; 
+  margin-bottom: 2rem; 
+}
+
+.analytics-title { 
+  font-size: clamp(2rem, 4vw, 2.6rem); 
+  font-weight: 800; 
+  color: var(--text-0); 
+  margin-bottom: 0.5rem;
+}
+
+.analytics-subtitle { 
+  color: var(--text-1); 
+  margin-bottom: 1.5rem;
+}
+
+.timeframe-selector {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.timeframe-btn {
+  background: var(--bg-2);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 0.5rem 1rem;
+  color: var(--text-1);
+  cursor: pointer;
+  transition: all var(--transition-normal);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.timeframe-btn:hover {
+  background: var(--bg-3);
+  border-color: var(--neon-cyan);
+  color: var(--text-0);
+}
+
+.timeframe-btn.active {
+  background: var(--gradient-neon);
+  border-color: var(--neon-cyan);
+  color: #081018;
+  box-shadow: var(--glow-cyan);
+}
+
+.analytics-content {
+  max-width: 1400px;
+  margin: 0 auto;
+  display: grid;
+  gap: 2rem;
+}
+
+.analytics-section {
+  background: var(--bg-2);
+  border: var(--border-soft);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35), var(--glow-purple);
+  padding: 1.75rem;
+}
+
+.analytics-section h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--text-0);
+  margin-bottom: 1.5rem;
+  border-bottom: 2px solid var(--neon-cyan);
+  padding-bottom: 0.5rem;
+}
+
+/* Overview Grid */
+.overview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.overview-card {
+  background: var(--bg-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  text-align: center;
+  transition: all var(--transition-normal);
+}
+
+.overview-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-cyan);
+}
+
+.overview-icon {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.overview-value {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  margin-bottom: 0.25rem;
+}
+
+.overview-label {
+  font-size: 0.9rem;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+/* Game Breakdown */
+.game-breakdown {
+  display: grid;
+  gap: 1rem;
+}
+
+.game-card {
+  background: var(--bg-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.game-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-purple);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.game-header h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-0);
+  margin: 0;
+}
+
+.game-stats {
+  display: flex;
+  gap: 1rem;
+}
+
+.game-stat {
+  background: var(--bg-2);
+  padding: 0.25rem 0.75rem;
+  border-radius: var(--radius-md);
+  font-size: 0.85rem;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.game-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.game-metric {
+  text-align: center;
+}
+
+.metric-value {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--neon-cyan);
+  margin-bottom: 0.25rem;
+}
+
+.metric-label {
+  font-size: 0.85rem;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.game-last-played {
+  font-size: 0.85rem;
+  color: var(--text-2);
+  text-align: right;
+}
+
+/* Skill Progress */
+.skill-progress {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.skill-card {
+  background: var(--bg-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.skill-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--glow-magenta);
+}
+
+.skill-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.skill-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-0);
+  margin: 0;
+}
+
+.skill-trend {
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.skill-score {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.score-value {
+  font-size: 2rem;
+  font-weight: 800;
+  color: var(--neon-magenta);
+  margin-bottom: 0.25rem;
+}
+
+.score-label {
+  font-size: 0.85rem;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.skill-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.skill-detail {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.85rem;
+}
+
+.detail-label {
+  color: var(--text-2);
+}
+
+.detail-value {
+  font-weight: 700;
+  color: var(--text-0);
+}
+
+/* Trends Chart */
+.trends-chart {
+  background: var(--bg-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+}
+
+.chart-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.chart-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-0);
+  margin: 0;
+}
+
+.chart-legend {
+  display: flex;
+  gap: 1rem;
+}
+
+.legend-item {
+  font-size: 0.85rem;
+  color: var(--text-1);
+  font-weight: 600;
+}
+
+.chart-bars {
+  display: flex;
+  align-items: end;
+  gap: 0.5rem;
+  height: 200px;
+  padding: 1rem 0;
+}
+
+.chart-bar-group {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.chart-bar {
+  width: 100%;
+  min-height: 4px;
+  border-radius: var(--radius-sm);
+  position: relative;
+  transition: all var(--transition-normal);
+}
+
+.chart-bar:hover {
+  transform: scaleY(1.1);
+}
+
+.score-bar {
+  background: linear-gradient(to top, var(--neon-cyan), var(--neon-magenta));
+  box-shadow: var(--glow-cyan);
+}
+
+.session-bar {
+  background: linear-gradient(to top, var(--neon-magenta), var(--neon-cyan));
+  box-shadow: var(--glow-magenta);
+}
+
+.bar-tooltip {
+  position: absolute;
+  top: -25px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--bg-2);
+  border: var(--border-soft);
+  border-radius: var(--radius-sm);
+  padding: 0.25rem 0.5rem;
+  font-size: 0.75rem;
+  color: var(--text-0);
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity var(--transition-normal);
+}
+
+.chart-bar:hover .bar-tooltip {
+  opacity: 1;
+}
+
+.bar-label {
+  font-size: 0.75rem;
+  color: var(--text-2);
+  text-align: center;
+  transform: rotate(-45deg);
+  margin-top: 0.5rem;
+}
+
+/* Achievements Grid */
+.achievements-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1rem;
+}
+
+.achievement-card {
+  background: var(--bg-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: all var(--transition-normal);
+}
+
+.achievement-card:hover {
+  transform: translateY(-2px);
+}
+
+.achievement-card.unlocked {
+  border-color: var(--neon-cyan);
+  box-shadow: var(--glow-cyan);
+}
+
+.achievement-card.locked {
+  opacity: 0.6;
+  filter: grayscale(0.5);
+}
+
+.achievement-icon {
+  font-size: 2.5rem;
+  flex-shrink: 0;
+}
+
+.achievement-content {
+  flex: 1;
+}
+
+.achievement-content h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-0);
+  margin: 0 0 0.5rem 0;
+}
+
+.achievement-content p {
+  font-size: 0.9rem;
+  color: var(--text-1);
+  margin: 0 0 0.5rem 0;
+}
+
+.achievement-date {
+  font-size: 0.8rem;
+  color: var(--neon-cyan);
+  font-weight: 600;
+}
+
+.achievement-status {
+  font-size: 0.8rem;
+  color: var(--text-2);
+  font-style: italic;
+}
+
+/* Recommendations List */
+.recommendations-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.recommendation-card {
+  background: var(--bg-3);
+  border: var(--border-soft);
+  border-radius: var(--radius-lg);
+  padding: 1.25rem;
+  transition: all var(--transition-normal);
+}
+
+.recommendation-card:hover {
+  transform: translateY(-2px);
+}
+
+.recommendation-card.priority-high {
+  border-left: 4px solid var(--error-color);
+}
+
+.recommendation-card.priority-medium {
+  border-left: 4px solid var(--warning-color);
+}
+
+.recommendation-card.priority-low {
+  border-left: 4px solid var(--success-color);
+}
+
+.recommendation-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.recommendation-icon {
+  font-size: 1.5rem;
+}
+
+.recommendation-header h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--text-0);
+  margin: 0;
+}
+
+.recommendation-card p {
+  font-size: 0.95rem;
+  color: var(--text-1);
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.recommendation-action {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+/* Utility Classes */
+.no-data {
+  text-align: center;
+  color: var(--text-2);
+  font-style: italic;
+  padding: 2rem;
+}
+
+.loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-1);
+}
+
+.error {
+  background: rgba(255, 77, 109, 0.08);
+  color: var(--danger);
+  border: 1px solid rgba(255, 77, 109, 0.35);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .overview-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  }
+  
+  .skill-progress {
+    grid-template-columns: 1fr;
+  }
+  
+  .achievements-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-section {
+    padding: 1.25rem;
+  }
+  
+  .overview-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .game-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .game-stats {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .chart-bars {
+    height: 150px;
+  }
+  
+  .bar-label {
+    font-size: 0.7rem;
+  }
+  
+  .timeframe-selector {
+    gap: 0.25rem;
+  }
+  
+  .timeframe-btn {
+    padding: 0.4rem 0.8rem;
+    font-size: 0.8rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .overview-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .game-metrics {
+    grid-template-columns: 1fr;
+  }
+  
+  .skill-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .chart-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+  
+  .chart-legend {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+  
+  .achievement-card {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .recommendation-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

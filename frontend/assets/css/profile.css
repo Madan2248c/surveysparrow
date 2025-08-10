@@ -57,6 +57,30 @@
 .detail-label { font-weight: 700; color: var(--text-0); }
 .detail-value { color: var(--text-1); }
 
+.stats-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.25rem;
+}
+
+.stats-header h3 {
+  margin: 0;
+}
+
+.analytics-link {
+  font-size: 0.9rem;
+  padding: 0.5rem 1rem;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.analytics-link::before {
+  content: "📊";
+}
+
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));

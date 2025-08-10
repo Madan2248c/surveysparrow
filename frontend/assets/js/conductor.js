@@ -429,12 +429,18 @@ class ConductorGame {
             console.log(`[ConductorGame] Session status received:`, sessionData.status, sessionData.evaluation ? 'with evaluation' : 'no evaluation');
             
             if (sessionData.status === 'evaluated' && sessionData.evaluation) {
-                // Evaluation is complete, hide loading indicator
+                // Evaluation is complete, hide loading indicator and show results
                 document.getElementById('evaluation-loading').classList.add('hidden');
+                
+                // Display evaluation results
+                this.displayEvaluationResults(sessionData);
             } else if (sessionData.status === 'completed' || sessionData.status === 'recording') {
                 // Still waiting for evaluation, check again in 2 seconds
                 console.log(`[ConductorGame] Evaluation not ready, re-checking in 2 seconds...`);
                 setTimeout(() => this.checkEvaluationStatus(), 2000);
+            } else if (sessionData.status === 'evaluation_failed') {
+                // Evaluation failed
+                document.getElementById('evaluation-loading').innerHTML = '<p style="color: red;">Evaluation failed. Please try again.</p>';
             } else {
                 console.warn(`[ConductorGame] Unexpected session status: ${sessionData.status}`);
                 document.getElementById('evaluation-loading').innerHTML = '<p style="color: orange;">Evaluation status unknown. Please check console for errors.</p>';
@@ -445,9 +451,57 @@ class ConductorGame {
         }
     }
     
+    displayEvaluationResults(sessionData) {
+        const resultsContainer = document.querySelector('.results-container');
+        
+        // Create evaluation results section
+        const evaluationSection = document.createElement('div');
+        evaluationSection.className = 'evaluation-results';
+        evaluationSection.innerHTML = `
+            <h3>Performance Analysis</h3>
+            <div class="evaluation-grid">
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.overallPerformance?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Overall Performance</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.overallPerformance?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.responseSpeed?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Response Speed</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.responseSpeed?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.energyRange?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Energy Range</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.energyRange?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.contentContinuity?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Content Continuity</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.contentContinuity?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.breathRecovery?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Breath Recovery</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.breathRecovery?.feedback || 'No feedback available'}</div>
+                </div>
+            </div>
+        `;
+        
+        // Insert evaluation results before the action buttons
+        const actionButtons = document.querySelector('.results-actions');
+        resultsContainer.insertBefore(evaluationSection, actionButtons);
+    }
+    
 
     
     clearResultsDisplay() {
+        // Remove any previously added evaluation results
+        const existingEvaluation = document.querySelector('.evaluation-results');
+        if (existingEvaluation) {
+            existingEvaluation.remove();
+        }
+        
         // Reset loading indicator
         const loadingIndicator = document.getElementById('evaluation-loading');
         if (loadingIndicator) {
@@ -455,7 +509,7 @@ class ConductorGame {
                 <p>Analyzing your performance...</p>
                 <div class="spinner"></div>
             `;
-            loadingIndicator.classList.add('hidden');
+            loadingIndicator.classList.remove('hidden');
         }
     }
     

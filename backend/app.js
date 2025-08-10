@@ -1,13 +1,14 @@
-require('dotenv').config();
+const config = require('./config');
 const express = require('express');
 const multer = require('multer');
 const gameController = require('./gameController');
 const conductorController = require('./conductorController');
 const tripleStepController = require('./tripleStepController');
 const userController = require('./userController');
+const analyticsController = require('./analyticsController');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = config.PORT;
 
 const storage = multer.memoryStorage();
 const upload = multer({ storage: storage });
@@ -73,6 +74,11 @@ app.get('/profile', (req, res) => {
   res.sendFile('profile.html', { root: '../frontend' });
 });
 
+// Route for analytics page
+app.get('/analytics', (req, res) => {
+  res.sendFile('analytics.html', { root: '../frontend' });
+});
+
 app.get('/health', (req, res) => {
   res.json({ status: 'OK', timestamp: new Date().toISOString() });
 });
@@ -108,6 +114,11 @@ app.post('/api/users', userController.createUser.bind(userController));
 app.get('/api/users/:userId/stats', userController.getUserStats.bind(userController));
 app.get('/api/users/:userId/sessions', userController.getUserSessions.bind(userController));
 app.get('/api/users/:userId/profile', userController.getUserProfile.bind(userController));
+
+// Analytics routes
+app.get('/api/analytics/:userId/progress', analyticsController.getUserProgressAnalytics.bind(analyticsController));
+app.get('/api/analytics/:userId/skills', analyticsController.getSkillAnalytics.bind(analyticsController));
+app.get('/api/analytics/:userId/achievements', analyticsController.getAchievementProgress.bind(analyticsController));
 
 // Update existing conductor routes
 app.post('/api/conductor/start-session', conductorController.startSession.bind(conductorController));

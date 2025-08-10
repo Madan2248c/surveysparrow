@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Oratora</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="assets/css/analytics.css">
+</head>
+<body>
+    <div class="container">
+        <button class="btn-outline back-btn" onclick="window.location.href='profile.html'">← Back to Profile</button>
+        
+        <div class="analytics-container">
+            <div class="analytics-header">
+                <h1 class="analytics-title">Progress Analytics</h1>
+                <p class="analytics-subtitle">Track your speaking skills development</p>
+                
+                <div class="timeframe-selector">
+                    <button class="timeframe-btn active" data-timeframe="30d">Last 30 Days</button>
+                    <button class="timeframe-btn" data-timeframe="7d">Last 7 Days</button>
+                    <button class="timeframe-btn" data-timeframe="90d">Last 90 Days</button>
+                    <button class="timeframe-btn" data-timeframe="all">All Time</button>
+                </div>
+            </div>
+        
+            <div id="loading" class="loading">Loading your analytics...</div>
+            
+            <div id="error" class="error" style="display: none;"></div>
+            
+            <div id="analyticsContent" class="analytics-content" style="display: none;">
+                <!-- Overview Section -->
+                <div class="analytics-section">
+                    <h2>Overview</h2>
+                    <div id="overviewGrid" class="overview-grid"></div>
+                </div>
+
+                <!-- Game Breakdown Section -->
+                <div class="analytics-section">
+                    <h2>Game Performance</h2>
+                    <div id="gameBreakdown" class="game-breakdown"></div>
+                </div>
+
+                <!-- Skill Progress Section -->
+                <div class="analytics-section">
+                    <h2>Skill Development</h2>
+                    <div id="skillProgress" class="skill-progress"></div>
+                </div>
+
+                <!-- Trends Section -->
+                <div class="analytics-section">
+                    <h2>Performance Trends</h2>
+                    <div id="trendsChart" class="trends-chart"></div>
+                </div>
+
+                <!-- Achievements Section -->
+                <div class="analytics-section">
+                    <h2>Achievements</h2>
+                    <div id="achievementsGrid" class="achievements-grid"></div>
+                </div>
+
+                <!-- Recommendations Section -->
+                <div class="analytics-section">
+                    <h2>Recommendations</h2>
+                    <div id="recommendationsList" class="recommendations-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        let currentTimeframe = '30d';
+        let analyticsData = null;
+        
+        // Check if user is logged in
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                currentUser = JSON.parse(user);
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function formatNumber(num) {
+            return num.toLocaleString();
+        }
+        
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        
+        function getTrendIcon(trend) {
+            if (trend > 0.1) return '📈';
+            if (trend < -0.1) return '📉';
+            return '➡️';
+        }
+        
+        function getTrendColor(trend) {
+            if (trend > 0.1) return 'var(--success-color)';
+            if (trend < -0.1) return 'var(--error-color)';
+            return 'var(--text-2)';
+        }
+        
+        function updateOverview(overview) {
+            const grid = document.getElementById('overviewGrid');
+            grid.innerHTML = `
+                <div class="overview-card">
+                    <div class="overview-icon">🎯</div>
+                    <div class="overview-value">${overview.totalSessions}</div>
+                    <div class="overview-label">Total Sessions</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">✅</div>
+                    <div class="overview-value">${overview.completionRate.toFixed(1)}%</div>
+                    <div class="overview-label">Completion Rate</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">⏱️</div>
+                    <div class="overview-value">${formatDuration(overview.totalDuration)}</div>
+                    <div class="overview-label">Total Time</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">⭐</div>
+                    <div class="overview-value">${overview.averageScore.toFixed(1)}/10</div>
+                    <div class="overview-label">Average Score</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">📊</div>
+                    <div class="overview-value" style="color: ${getTrendColor(overview.improvementRate)}">
+                        ${getTrendIcon(overview.improvementRate)} ${overview.improvementRate.toFixed(1)}%
+                    </div>
+                    <div class="overview-label">Improvement Rate</div>
+                </div>
+                <div class="overview-card">
+                    <div class="overview-icon">⏰</div>
+                    <div class="overview-value">${formatDuration(overview.averageSessionDuration)}</div>
+                    <div class="overview-label">Avg Session Time</div>
+                </div>
+            `;
+        }
+        
+        function updateGameBreakdown(gameBreakdown) {
+            const container = document.getElementById('gameBreakdown');
+            container.innerHTML = '';
+            
+            Object.entries(gameBreakdown).forEach(([gameType, stats]) => {
+                if (stats.totalSessions > 0) {
+                    const gameCard = document.createElement('div');
+                    gameCard.className = 'game-card';
+                    
+                    const gameNames = {
+                        'rapid-fire': 'Rapid Fire Analogies',
+                        'conductor': 'The Conductor',
+                        'triple-step': 'Triple Step'
+                    };
+                    
+                    gameCard.innerHTML = `
+                        <div class="game-header">
+                            <h3>${gameNames[gameType]}</h3>
+                            <div class="game-stats">
+                                <span class="game-stat">${stats.totalSessions} sessions</span>
+                                <span class="game-stat">${stats.completionRate.toFixed(1)}% completion</span>
+                            </div>
+                        </div>
+                        <div class="game-metrics">
+                            <div class="game-metric">
+                                <div class="metric-value">${stats.averageScore.toFixed(1)}/10</div>
+                                <div class="metric-label">Average Score</div>
+                            </div>
+                            <div class="game-metric">
+                                <div class="metric-value">${formatDuration(stats.totalDuration)}</div>
+                                <div class="metric-label">Total Time</div>
+                            </div>
+                            <div class="game-metric">
+                                <div class="metric-value">${formatDuration(stats.averageSessionDuration)}</div>
+                                <div class="metric-label">Avg Duration</div>
+                            </div>
+                        </div>
+                        ${stats.lastPlayed ? `<div class="game-last-played">Last played: ${formatDate(stats.lastPlayed)}</div>` : ''}
+                    `;
+                    
+                    container.appendChild(gameCard);
+                }
+            });
+        }
+        
+        function updateSkillProgress(skillProgress) {
+            const container = document.getElementById('skillProgress');
+            container.innerHTML = '';
+            
+            Object.entries(skillProgress).forEach(([skill, data]) => {
+                if (data.scores.length > 0) {
+                    const skillCard = document.createElement('div');
+                    skillCard.className = 'skill-card';
+                    
+                    const skillNames = {
+                        'responseSpeed': 'Response Speed',
+                        'energyRange': 'Energy Range',
+                        'contentContinuity': 'Content Continuity',
+                        'breathRecovery': 'Breath Recovery',
+                        'overallPerformance': 'Overall Performance'
+                    };
+                    
+                    skillCard.innerHTML = `
+                        <div class="skill-header">
+                            <h3>${skillNames[skill]}</h3>
+                            <div class="skill-trend" style="color: ${getTrendColor(data.trend)}">
+                                ${getTrendIcon(data.trend)} ${data.trend > 0 ? '+' : ''}${data.trend.toFixed(2)}
+                            </div>
+                        </div>
+                        <div class="skill-score">
+                            <div class="score-value">${data.averageScore.toFixed(1)}/10</div>
+                            <div class="score-label">Average Score</div>
+                        </div>
+                        <div class="skill-details">
+                            <div class="skill-detail">
+                                <span class="detail-label">Sessions:</span>
+                                <span class="detail-value">${data.scores.length}</span>
+                            </div>
+                            <div class="skill-detail">
+                                <span class="detail-label">Best Score:</span>
+                                <span class="detail-value">${Math.max(...data.scores.map(s => s.score)).toFixed(1)}/10</span>
+                            </div>
+                        </div>
+                    `;
+                    
+                    container.appendChild(skillCard);
+                }
+            });
+        }
+        
+        function updateTrends(trends) {
+            const container = document.getElementById('trendsChart');
+            
+            if (trends.weekly.length === 0) {
+                container.innerHTML = '<p class="no-data">No trend data available yet. Complete more sessions to see your progress trends.</p>';
+                return;
+            }
+            
+            // Create a simple trend visualization
+            const recentWeeks = trends.weekly.slice(-8); // Last 8 weeks
+            const chartData = recentWeeks.map(week => ({
+                period: week.period,
+                score: week.averageScore,
+                sessions: week.totalSessions
+            }));
+            
+            container.innerHTML = `
+                <div class="trend-chart">
+                    <div class="chart-header">
+                        <h3>Weekly Performance Trend</h3>
+                        <div class="chart-legend">
+                            <span class="legend-item">📈 Score</span>
+                            <span class="legend-item">📊 Sessions</span>
+                        </div>
+                    </div>
+                    <div class="chart-bars">
+                        ${chartData.map(week => `
+                            <div class="chart-bar-group">
+                                <div class="chart-bar score-bar" style="height: ${(week.score / 10) * 100}%">
+                                    <div class="bar-tooltip">${week.score.toFixed(1)}/10</div>
+                                </div>
+                                <div class="chart-bar session-bar" style="height: ${Math.min(week.sessions * 10, 100)}%">
+                                    <div class="bar-tooltip">${week.sessions} sessions</div>
+                                </div>
+                                <div class="bar-label">${week.period}</div>
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        }
+        
+        function updateAchievements(achievements) {
+            const container = document.getElementById('achievementsGrid');
+            container.innerHTML = '';
+            
+            const achievementData = [
+                { key: 'firstSession', title: 'First Steps', description: 'Complete your first session', icon: '🎯' },
+                { key: 'tenSessions', title: 'Getting Started', description: 'Complete 10 sessions', icon: '🚀' },
+                { key: 'fiftySessions', title: 'Dedicated Learner', description: 'Complete 50 sessions', icon: '💪' },
+                { key: 'hundredSessions', title: 'Century Club', description: 'Complete 100 sessions', icon: '🏆' },
+                { key: 'highScorer', title: 'High Achiever', description: 'Score 8+ on any session', icon: '⭐' },
+                { key: 'consistentPerformer', title: 'Consistent', description: 'Maintain 7+ average over 5+ sessions', icon: '📈' },
+                { key: 'rapidFireMaster', title: 'Rapid Fire Master', description: 'Complete 20 Rapid Fire sessions', icon: '⚡' },
+                { key: 'conductorPro', title: 'Conductor Pro', description: 'Complete 15 Conductor sessions', icon: '🎼' },
+                { key: 'tripleStepExpert', title: 'Triple Step Expert', description: 'Complete 10 Triple Step sessions', icon: '🎯' }
+            ];
+            
+            achievementData.forEach(achievement => {
+                const data = achievements[achievement.key];
+                const achievementCard = document.createElement('div');
+                achievementCard.className = `achievement-card ${data.unlocked ? 'unlocked' : 'locked'}`;
+                
+                achievementCard.innerHTML = `
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-content">
+                        <h3>${achievement.title}</h3>
+                        <p>${achievement.description}</p>
+                        ${data.unlocked && data.date ? 
+                            `<div class="achievement-date">Unlocked: ${formatDate(data.date)}</div>` : 
+                            '<div class="achievement-status">Not unlocked yet</div>'
+                        }
+                    </div>
+                `;
+                
+                container.appendChild(achievementCard);
+            });
+        }
+        
+        function updateRecommendations(recommendations) {
+            const container = document.getElementById('recommendationsList');
+            container.innerHTML = '';
+            
+            if (recommendations.length === 0) {
+                container.innerHTML = '<p class="no-data">No recommendations available at this time.</p>';
+                return;
+            }
+            
+            recommendations.forEach(rec => {
+                const recCard = document.createElement('div');
+                recCard.className = `recommendation-card priority-${rec.priority}`;
+                
+                const priorityIcons = {
+                    'high': '🔴',
+                    'medium': '🟡',
+                    'low': '🟢'
+                };
+                
+                recCard.innerHTML = `
+                    <div class="recommendation-header">
+                        <div class="recommendation-icon">${priorityIcons[rec.priority]}</div>
+                        <h3>${rec.title}</h3>
+                    </div>
+                    <p>${rec.description}</p>
+                    ${rec.skill ? `<div class="recommendation-action">
+                        <button class="btn-primary" onclick="focusOnSkill('${rec.skill}')">Focus on this skill</button>
+                    </div>` : ''}
+                    ${rec.gameType ? `<div class="recommendation-action">
+                        <button class="btn-primary" onclick="tryGame('${rec.gameType}')">Try this game</button>
+                    </div>` : ''}
+                `;
+                
+                container.appendChild(recCard);
+            });
+        }
+        
+        function focusOnSkill(skill) {
+            // Navigate to a specific game that focuses on this skill
+            const skillToGame = {
+                'responseSpeed': 'rapid-fire',
+                'energyRange': 'conductor',
+                'contentContinuity': 'triple-step',
+                'breathRecovery': 'conductor',
+                'overallPerformance': 'rapid-fire'
+            };
+            
+            const gameType = skillToGame[skill] || 'rapid-fire';
+            window.location.href = `setup.html?game=${gameType}`;
+        }
+        
+        function tryGame(gameType) {
+            window.location.href = `setup.html?game=${gameType}`;
+        }
+        
+        async function loadAnalytics() {
+            try {
+                const response = await fetch(`/api/analytics/${currentUser.id}/progress?timeframe=${currentTimeframe}`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    analyticsData = data.analytics;
+                    
+                    updateOverview(analyticsData.overview);
+                    updateGameBreakdown(analyticsData.gameBreakdown);
+                    updateSkillProgress(analyticsData.skillProgress);
+                    updateTrends(analyticsData.trends);
+                    updateAchievements(analyticsData.achievements);
+                    updateRecommendations(analyticsData.recommendations);
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('analyticsContent').style.display = 'block';
+                } else {
+                    showError(data.message || 'Failed to load analytics');
+                }
+            } catch (error) {
+                console.error('Error loading analytics:', error);
+                showError('Network error. Please try again.');
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            checkAuth();
+            
+            // Timeframe selector
+            document.querySelectorAll('.timeframe-btn').forEach(btn => {
+                btn.addEventListener('click', function() {
+                    document.querySelectorAll('.timeframe-btn').forEach(b => b.classList.remove('active'));
+                    this.classList.add('active');
+                    currentTimeframe = this.dataset.timeframe;
+                    loadAnalytics();
+                });
+            });
+            
+            loadAnalytics();
+        });
+    </script>
+</body>
+</html>

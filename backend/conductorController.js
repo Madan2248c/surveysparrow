@@ -519,7 +519,6 @@ class ConductorController {
         // Update session with evaluation result
         const session = conductorSessions.get(request.sessionId);
         if (session) {
-          session.evaluation = session.evaluation; // Use the evaluation result from the session object
           session.evaluatedAt = Date.now();
           session.status = 'evaluated';
           console.log(`[processConductorEvaluationQueue] ✅ Session ${request.sessionId} EVALUATED`);
@@ -537,6 +536,7 @@ class ConductorController {
                   evaluation: session.evaluation,
                   energyChanges: session.energyChanges,
                   breathMoments: session.breathMoments,
+                  analytics: session.analytics,
                   averageScores: {
                     overall: session.evaluation?.overallPerformance?.score || 5,
                     responseSpeed: session.evaluation?.responseSpeed?.score || 5,
