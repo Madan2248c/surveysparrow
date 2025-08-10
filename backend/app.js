@@ -19,8 +19,13 @@ app.use(express.urlencoded({ extended: true }));
 // Serve static files from the frontend directory
 app.use(express.static('../frontend'));
 
-// Route for the home page
-app.get('/', (req, res) => {
+// Route for the landing page
+app.get('/landing', (req, res) => {
+  res.sendFile('landing.html', { root: '../frontend' });
+});
+
+// Route for the main application page (game selection)
+app.get('/app', (req, res) => {
   res.sendFile('index.html', { root: '../frontend' });
 });
 
