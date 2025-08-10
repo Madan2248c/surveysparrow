@@ -418,6 +418,57 @@ const getSessionStatus = async (req, res) => {
   }
 };
 
+// Fetch completed session from database by DB session id and map to analysis shape
+const getSessionStatusFromDb = async (req, res) => {
+  try {
+    const { dbSessionId } = req.params;
+
+    if (!dbSessionId) {
+      return res.status(400).json({ error: "DB session ID is required." });
+    }
+
+    const dbSession = await databaseService.getGameSession(dbSessionId);
+    if (!dbSession) {
+      return res.status(404).json({ error: "Session not found." });
+    }
+
+    const s = dbSession;
+    const sd = s.session_data || {};
+    const totalPrompts = sd.totalPrompts || (sd.evaluations ? sd.evaluations.length : 0) || 0;
+    const evaluations = sd.evaluations || [];
+    const responseTimes = sd.responseTimes || new Array(totalPrompts).fill(null);
+    const audioFiles = s.audio_files || [];
+
+    // Try to infer original in-memory sessionId from stored filenames so audio playback works
+    let originalSessionId = null;
+    if (audioFiles.length > 0) {
+      const match = String(audioFiles[0]).match(/^(.*)_prompt_/);
+      if (match && match[1]) {
+        originalSessionId = match[1];
+      }
+    }
+
+    const response = {
+      sessionId: originalSessionId || String(dbSessionId),
+      status: 'completed',
+      completed: evaluations.filter(Boolean).length,
+      totalPrompts,
+      evaluations,
+      responseTimes,
+      audioFiles,
+      difficulty: sd.difficulty || s.topic || 'medium',
+      createdAt: s.created_at,
+      completedAt: s.updated_at || s.created_at,
+      isFromDb: true,
+    };
+
+    return res.json(response);
+  } catch (error) {
+    console.error(`[getSessionStatusFromDb] Error:`, error);
+    return res.status(500).json({ error: "Failed to get session from database." });
+  }
+};
+
 // Cleanup old sessions and audio files (older than 24 hours)
 const cleanupOldSessions = () => {
   const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
@@ -511,6 +562,7 @@ const debugState = async (req, res) => {
 module.exports = {
   evaluateRapidFire,
   getSessionStatus,
+  getSessionStatusFromDb,
   serveAudioFile,
   debugState,
 };

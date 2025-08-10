@@ -3,13 +3,45 @@ let gameResults = {};
 let currentGame = '';
 
 // Initialize feedback page
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    // Load via URL for past sessions
+    const urlParams = new URLSearchParams(window.location.search);
+    const dbSessionId = urlParams.get('dbSessionId');
+    const urlGame = urlParams.get('game');
+
     // Load results from session storage
     let resultsData = sessionStorage.getItem('gameResults');
-    currentGame = sessionStorage.getItem('currentGame');
+    currentGame = urlGame || sessionStorage.getItem('currentGame');
     
     // Check for Triple Step specific results
     if (currentGame === 'triple-step') {
+        // If viewing past session, fetch from backend
+        if (dbSessionId) {
+            try {
+                const resp = await fetch(`/api/v1/games/triple-step/session-db/${dbSessionId}`);
+                if (resp.ok) {
+                    const data = await resp.json();
+                    // Adapt data to existing feedback shape
+                    gameResults = {
+                        sessionId: data.sessionId,
+                        topic: data.topic,
+                        totalWords: (data.wordList || []).length,
+                        integratedWords: data.integratedWords || [],
+                        missedWords: data.missedWords || [],
+                        successRate: ((data.integratedWords || []).length / Math.max(1, (data.wordList || []).length)) * 100,
+                        transcription: data.transcription || '',
+                        totalTime: data.totalTime || 0,
+                        actualTime: data.actualTime || 0,
+                        completedEarly: !!data.completedEarly,
+                        evaluation: data.evaluation || null
+                    };
+                    createFeedbackScreen();
+                    return;
+                }
+            } catch (e) {
+                console.error('Failed to fetch triple-step session from DB', e);
+            }
+        }
         resultsData = sessionStorage.getItem('tripleStepResults');
     }
     
@@ -18,7 +50,7 @@ document.addEventListener('DOMContentLoaded', function() {
         return;
     }
     
-    gameResults = JSON.parse(resultsData);
+    gameResults = resultsData ? JSON.parse(resultsData) : gameResults;
     
     // Create feedback screen
     createFeedbackScreen();

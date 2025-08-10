@@ -80,6 +80,7 @@ app.get('/health', (req, res) => {
 // Rapid Fire Game API routes
 app.post('/api/v1/games/rapid-fire/evaluate', upload.single('audio'), gameController.evaluateRapidFire);
 app.get('/api/v1/games/rapid-fire/session/:sessionId', gameController.getSessionStatus);
+app.get('/api/v1/games/rapid-fire/session-db/:dbSessionId', gameController.getSessionStatusFromDb);
 app.get('/api/v1/audio/:sessionId/:promptIndex', gameController.serveAudioFile); // Audio file endpoint
 app.get('/api/v1/debug/state', gameController.debugState); // Debug endpoint
 
@@ -89,12 +90,14 @@ app.post('/api/v1/games/conductor/energy-change', conductorController.recordEner
 app.post('/api/v1/games/conductor/breath-moment', conductorController.recordBreathMoment.bind(conductorController));
 app.post('/api/v1/games/conductor/end', upload.single('audio'), conductorController.endConductorSession.bind(conductorController));
 app.get('/api/v1/games/conductor/session/:sessionId', conductorController.getConductorSessionStatus.bind(conductorController));
+app.get('/api/v1/games/conductor/session-db/:dbSessionId', conductorController.getConductorSessionStatusFromDb.bind(conductorController));
 app.get('/api/v1/games/conductor/audio/:sessionId', conductorController.serveConductorAudio.bind(conductorController)); // Audio file endpoint
 app.get('/api/v1/debug/conductor-state', conductorController.debugConductorState.bind(conductorController)); // Debug endpoint
 
 // Triple Step Game API routes
 app.post('/api/v1/games/triple-step/evaluate', upload.single('audio'), tripleStepController.evaluateTripleStep);
 app.get('/api/v1/games/triple-step/session/:sessionId', tripleStepController.getTripleStepSessionStatus);
+app.get('/api/v1/games/triple-step/session-db/:dbSessionId', tripleStepController.getTripleStepSessionStatusFromDb);
 app.get('/api/v1/games/triple-step/audio/:sessionId', tripleStepController.serveTripleStepAudioFile); // Audio file endpoint
 app.get('/api/v1/debug/triple-step-state', tripleStepController.debugTripleStepState); // Debug endpoint
 

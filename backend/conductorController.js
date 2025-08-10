@@ -754,6 +754,43 @@ Provide detailed analysis with specific timestamps and voice characteristics. Th
     }
   };
 
+  async getConductorSessionStatusFromDb(req, res) {
+    try {
+      const { dbSessionId } = req.params;
+      if (!dbSessionId) {
+        return res.status(400).json({ error: 'DB session ID is required.' });
+      }
+
+      const dbSession = await databaseService.getGameSession(dbSessionId);
+      if (!dbSession) {
+        return res.status(404).json({ error: 'Session not found.' });
+      }
+
+      const s = dbSession;
+      const sd = s.session_data || {};
+      const response = {
+        sessionId: String(dbSessionId),
+        status: 'evaluated',
+        topic: s.topic,
+        duration: s.duration,
+        energyChanges: sd.energyChanges || [],
+        breathMoments: sd.breathMoments || [],
+        evaluation: sd.evaluation || null,
+        analytics: sd.analytics || null,
+        createdAt: s.created_at,
+        endedAt: s.updated_at || s.created_at,
+        evaluatedAt: s.updated_at || s.created_at,
+        actualDuration: (s.duration || 0) * 1000,
+        isFromDb: true,
+      };
+
+      return res.json(response);
+    } catch (error) {
+      console.error(`[getConductorSessionStatusFromDb] Error:`, error);
+      return res.status(500).json({ error: 'Failed to get session from database.' });
+    }
+  }
+
   // Cleanup old sessions (older than 24 hours)
   cleanupOldConductorSessions() {
     const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);

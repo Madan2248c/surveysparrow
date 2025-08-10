@@ -191,9 +191,5 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
     
-    // Test function to verify JavaScript is working
-    window.testNavigation = function() {
-        console.log('Test navigation function called');
-        alert('JavaScript is working!');
-    };
+
 });

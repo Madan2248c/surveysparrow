@@ -1,5 +1,6 @@
 // Conductor Analysis page state
 let sessionId = null;
+let dbSessionId = null;
 let gameType = '';
 let sessionData = null;
 let pollInterval = null;
@@ -9,9 +10,10 @@ document.addEventListener('DOMContentLoaded', function() {
     // Get session data from URL parameters
     const urlParams = new URLSearchParams(window.location.search);
     sessionId = urlParams.get('sessionId');
+    dbSessionId = urlParams.get('dbSessionId');
     gameType = urlParams.get('gameType');
     
-    if (!sessionId || gameType !== 'conductor') {
+    if ((!sessionId && !dbSessionId) || gameType !== 'conductor') {
         console.error('Invalid session parameters');
         window.location.href = 'index.html';
         return;
@@ -95,7 +97,12 @@ function startPolling() {
 
 async function checkSessionStatus() {
     try {
-        const response = await fetch(`/api/v1/games/conductor/session/${sessionId}`);
+        let response;
+        if (dbSessionId) {
+            response = await fetch(`/api/v1/games/conductor/session-db/${dbSessionId}`);
+        } else {
+            response = await fetch(`/api/v1/games/conductor/session/${sessionId}`);
+        }
         
         if (!response.ok) {
             throw new Error('Failed to get session status');

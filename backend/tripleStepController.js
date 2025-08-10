@@ -454,6 +454,45 @@ const getTripleStepSessionStatus = async (req, res) => {
   }
 };
 
+// Get Triple Step session from DB by id and adapt to feedback shape
+const getTripleStepSessionStatusFromDb = async (req, res) => {
+  try {
+    const { dbSessionId } = req.params;
+    if (!dbSessionId) {
+      return res.status(400).json({ error: 'DB session ID is required.' });
+    }
+
+    const dbSession = await databaseService.getGameSession(dbSessionId);
+    if (!dbSession) {
+      return res.status(404).json({ error: 'Session not found.' });
+    }
+
+    const s = dbSession;
+    const sd = s.session_data || {};
+    const response = {
+      sessionId: String(dbSessionId),
+      status: s.completed ? 'completed' : 'processing',
+      topic: s.topic,
+      wordList: sd.wordList || [],
+      integratedWords: sd.integratedWords || [],
+      missedWords: sd.missedWords || [],
+      transcription: sd.transcription || '',
+      totalTime: sd.totalTime || s.duration || 0,
+      actualTime: sd.actualTime || s.duration || 0,
+      completedEarly: sd.completedEarly || false,
+      evaluation: sd.evaluation || null,
+      audioFile: (s.audio_files && s.audio_files[0]) || null,
+      createdAt: s.created_at,
+      completedAt: s.updated_at || s.created_at
+    };
+
+    return res.json(response);
+  } catch (error) {
+    console.error('[getTripleStepSessionStatusFromDb] Error:', error);
+    return res.status(500).json({ error: 'Failed to get session from database.' });
+  }
+};
+
 // Serve Triple Step audio file
 const serveTripleStepAudioFile = async (req, res) => {
   try {
@@ -542,6 +581,7 @@ setInterval(cleanupOldTripleStepSessions, 60 * 60 * 1000);
 module.exports = {
   evaluateTripleStep,
   getTripleStepSessionStatus,
+  getTripleStepSessionStatusFromDb,
   serveTripleStepAudioFile,
   debugTripleStepState,
 };

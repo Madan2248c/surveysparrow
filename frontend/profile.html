@@ -174,25 +174,36 @@
                                session.session_data?.averageScores?.energy || 
                                session.energy_levels?.[0] || 0;
                 
+                // Determine analysis link for supported games
+                let viewLink = '';
+                if (session.id && session.game_type === 'rapid-fire') {
+                    viewLink = `analysis.html?dbSessionId=${encodeURIComponent(session.id)}&game=rapid-fire`;
+                } else if (session.id && session.game_type === 'conductor') {
+                    viewLink = `conductor-analysis.html?dbSessionId=${encodeURIComponent(session.id)}&gameType=conductor`;
+                } else if (session.id && session.game_type === 'triple-step') {
+                    viewLink = `feedback.html?game=triple-step&dbSessionId=${encodeURIComponent(session.id)}`;
+                }
+
                 sessionItem.innerHTML = `
-                    <div class="session-header">
-                        <div class="session-game">${gameNames[session.game_type] || session.game_type}</div>
-                        <div class="session-date">${formatDate(session.created_at)}</div>
+                    <div class=\"session-header\">
+                        <div class=\"session-game\">${gameNames[session.game_type] || session.game_type}</div>
+                        <div class=\"session-date\">${formatDate(session.created_at)}</div>
                     </div>
-                    <div class="session-details">
-                        <div class="session-detail">
-                            <span class="session-detail-label">Duration:</span>
-                            <span class="session-detail-value">${formatDuration(session.duration)}</span>
+                    <div class=\"session-details\">
+                        <div class=\"session-detail\">
+                            <span class=\"session-detail-label\">Duration:</span>
+                            <span class=\"session-detail-value\">${formatDuration(session.duration)}</span>
                         </div>
-                        <div class="session-detail">
-                            <span class="session-detail-label">Score:</span>
-                            <span class="session-detail-value">${avgScore.toFixed(1)}/10</span>
+                        <div class=\"session-detail\">
+                            <span class=\"session-detail-label\">Score:</span>
+                            <span class=\"session-detail-value\">${avgScore.toFixed(1)}/10</span>
                         </div>
-                        <div class="session-detail">
-                            <span class="session-detail-label">Status:</span>
-                            <span class="session-detail-value">${session.completed ? 'Completed' : 'In Progress'}</span>
+                        <div class=\"session-detail\">
+                            <span class=\"session-detail-label\">Status:</span>
+                            <span class=\"session-detail-value\">${session.completed ? 'Completed' : 'In Progress'}</span>
                         </div>
                     </div>
+                    ${viewLink ? `<div style=\"margin-top: 10px; text-align: right;\"><a class=\"action-btn btn-outline view-session-btn\" href=\"${viewLink}\">View</a></div>` : ''}
                 `;
                 sessionsList.appendChild(sessionItem);
             });
