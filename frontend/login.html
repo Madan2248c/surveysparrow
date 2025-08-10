@@ -29,6 +29,10 @@
                     <label for="email" class="form-label">Email</label>
                     <input type="email" id="email" name="email" class="form-input" required>
                 </div>
+                <div class="form-group">
+                    <label for="password" class="form-label">Password</label>
+                    <input type="password" id="password" name="password" class="form-input" required minlength="6">
+                </div>
                 
                 <button type="submit" class="auth-btn" id="loginBtn">
                     <span id="loginBtnText">Sign In</span>
@@ -67,9 +71,10 @@
             e.preventDefault();
             
             const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
             
-            if (!email) {
-                showError('Please enter your email');
+            if (!email || !password) {
+                showError('Please enter email and password');
                 return;
             }
             
@@ -81,7 +86,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ email })
+                    body: JSON.stringify({ email, password })
                 });
                 let data = null;
                 try { data = await response.json(); } catch (_) {}
@@ -97,23 +102,9 @@
                         window.location.href = 'index.html';
                     }, 1000);
                 } else if (response.status === 404) {
-                    // Auto-create account if not found
-                    const inferredName = email.split('@')[0] || 'User';
-                    const signupResp = await fetch('/api/auth/signup', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ name: inferredName, email })
-                    });
-                    let signupData = null;
-                    try { signupData = await signupResp.json(); } catch (_) {}
-
-                    if (signupResp.ok && signupData && signupData.success) {
-                        showSuccess('Account created and signed in! Redirecting...');
-                        localStorage.setItem('user', JSON.stringify(signupData.user));
-                        setTimeout(() => { window.location.href = 'index.html'; }, 1000);
-                    } else {
-                        showError((signupData && signupData.message) || 'User not found. Please sign up.');
-                    }
+                    showError('User not found. Please sign up.');
+                } else if (response.status === 401) {
+                    showError('Invalid credentials');
                 } else {
                     showError((data && data.message) || 'Login failed');
                 }

@@ -1,15 +1,16 @@
 const databaseService = require('./databaseService');
+const bcrypt = require('bcryptjs');
 
 class UserController {
     async signup(req, res) {
         try {
-            const { name, email, age } = req.body;
+            const { name, email, password, age } = req.body;
             
             // Validate required fields
-            if (!name || !email) {
+            if (!name || !email || !password) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Name and email are required'
+                    message: 'Name, email and password are required'
                 });
             }
             
@@ -22,7 +23,8 @@ class UserController {
                 });
             }
             
-            const user = await databaseService.createUser({ name, email, age });
+            const passwordHash = await bcrypt.hash(password, 10);
+            const user = await databaseService.createUser({ name, email, age, password_hash: passwordHash });
             
             res.json({
                 success: true,
@@ -45,12 +47,12 @@ class UserController {
 
     async login(req, res) {
         try {
-            const { email } = req.body;
+            const { email, password } = req.body;
             
-            if (!email) {
+            if (!email || !password) {
                 return res.status(400).json({
                     success: false,
-                    message: 'Email is required'
+                    message: 'Email and password are required'
                 });
             }
             
@@ -61,7 +63,15 @@ class UserController {
                     message: 'User not found'
                 });
             }
-            
+            // Verify password
+            if (!user.password_hash) {
+                return res.status(400).json({ success: false, message: 'Account has no password set. Please sign up again.' });
+            }
+            const isValid = await bcrypt.compare(password, user.password_hash);
+            if (!isValid) {
+                return res.status(401).json({ success: false, message: 'Invalid credentials' });
+            }
+
             res.json({
                 success: true,
                 user: {

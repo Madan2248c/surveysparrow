@@ -34,6 +34,10 @@
                     <label for="email" class="form-label">Email</label>
                     <input type="email" id="email" name="email" class="form-input" required>
                 </div>
+                 <div class="form-group">
+                     <label for="password" class="form-label">Password</label>
+                     <input type="password" id="password" name="password" class="form-input" required minlength="6">
+                 </div>
                 
                 <div class="form-group">
                     <label for="age" class="form-label">Age (Optional)</label>
@@ -78,6 +82,7 @@
             
             const name = document.getElementById('name').value.trim();
             const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
             const age = document.getElementById('age').value ? parseInt(document.getElementById('age').value) : null;
             
             if (!name) {
@@ -90,6 +95,11 @@
                 return;
             }
             
+            if (!password || password.length < 6) {
+                showError('Please enter a password with at least 6 characters');
+                return;
+            }
+
             if (age && (age < 1 || age > 120)) {
                 showError('Please enter a valid age');
                 return;
@@ -103,7 +113,7 @@
                     headers: {
                         'Content-Type': 'application/json'
                     },
-                    body: JSON.stringify({ name, email, age })
+                    body: JSON.stringify({ name, email, password, age })
                 });
                 
                 const data = await response.json();
