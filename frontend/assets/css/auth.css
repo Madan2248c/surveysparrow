@@ -1,0 +1,73 @@
+/* Auth Pages - Consistent with global neon/glass theme */
+
+.back-link {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 40;
+}
+
+.auth-screen {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem 1rem;
+}
+
+.auth-card {
+  background: var(--bg-2);
+  border: var(--border-soft);
+  border-radius: var(--radius-xl);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35), var(--glow-purple);
+  width: 100%;
+  max-width: 440px;
+  padding: 2rem;
+  text-align: center;
+}
+
+.auth-header { margin-bottom: 1.5rem; }
+.auth-title { font-size: 2rem; font-weight: 800; color: var(--text-0); }
+.auth-subtitle { color: var(--text-1); }
+
+.form-group { margin-bottom: 1rem; text-align: left; }
+.form-label { display: block; margin-bottom: 0.5rem; font-weight: 700; color: var(--text-0); }
+
+/* Inputs use global theme styles; adjust sizing only */
+.form-input { width: 100%; padding: 0.8rem 0.9rem; }
+
+/* Buttons get global neon styles via theme; sizing here */
+.auth-btn { width: 100%; padding: 0.9rem 1rem; font-weight: 700; border-radius: var(--radius-lg); }
+
+.auth-footer { margin-top: 0.75rem; }
+.auth-link { color: var(--neon-cyan); font-weight: 700; text-decoration: none; }
+.auth-link:hover { text-decoration: underline; }
+
+.error-message {
+  background: rgba(255, 77, 109, 0.08);
+  color: var(--danger);
+  border: 1px solid rgba(255, 77, 109, 0.35);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+  display: none;
+}
+
+.success-message {
+  background: rgba(0, 255, 163, 0.08);
+  color: var(--neon-green);
+  border: 1px solid rgba(0, 255, 163, 0.35);
+  padding: 0.75rem;
+  border-radius: var(--radius-md);
+  margin-bottom: 0.75rem;
+  display: none;
+}
+
+@media (max-width: 480px) {
+  .auth-card { padding: 1.5rem; }
+  .auth-title { font-size: 1.6rem; }
+}
+
+
