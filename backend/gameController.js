@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
 const fs = require('fs');
 const path = require('path');
+const databaseService = require('./databaseService');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -67,7 +68,7 @@ const gameSessions = new Map();
 
 const evaluateRapidFire = async (req, res) => {
   try {
-    const { seconds, difficulty, prompt: userPrompt, promptIndex, totalPrompts, sessionId, responseTime, totalTime } = req.body;
+    const { seconds, difficulty, prompt: userPrompt, promptIndex, totalPrompts, sessionId, responseTime, totalTime, userId } = req.body;
     const audioFile = req.file;
 
     console.log(`[evaluateRapidFire] Received request for session: ${sessionId}, prompt: ${promptIndex}/${totalPrompts}`);
@@ -85,6 +86,35 @@ const evaluateRapidFire = async (req, res) => {
     // Initialize session if it doesn't exist
     if (!gameSessions.has(sessionId)) {
       console.log(`[evaluateRapidFire] Creating new session: ${sessionId} with ${totalPrompts} total prompts`);
+      
+      // Create database session if userId is provided
+      let dbSessionId = null;
+      if (userId) {
+        try {
+          const sessionData = {
+            user_id: userId,
+            game_type: 'rapid-fire',
+            topic: difficulty,
+            duration: 0, // Will be updated when session completes
+            energy_levels: [],
+            session_data: {
+              totalPrompts: parseInt(totalPrompts),
+              difficulty: difficulty,
+              evaluations: [],
+              responseTimes: []
+            },
+            audio_files: [],
+            completed: false
+          };
+          
+          const dbSession = await databaseService.createGameSession(sessionData);
+          dbSessionId = dbSession.id;
+          console.log(`[evaluateRapidFire] Created database session: ${dbSessionId}`);
+        } catch (error) {
+          console.error(`[evaluateRapidFire] Error creating database session:`, error);
+        }
+      }
+      
       gameSessions.set(sessionId, {
         evaluations: new Array(parseInt(totalPrompts)).fill(null),
         totalPrompts: parseInt(totalPrompts),
@@ -93,7 +123,9 @@ const evaluateRapidFire = async (req, res) => {
         difficulty,
         createdAt: Date.now(),
         responseTimes: new Array(parseInt(totalPrompts)).fill(null),
-        audioFiles: new Array(parseInt(totalPrompts)).fill(null)
+        audioFiles: new Array(parseInt(totalPrompts)).fill(null),
+        dbSessionId: dbSessionId,
+        userId: userId
       });
     } else {
       console.log(`[evaluateRapidFire] Using existing session: ${sessionId}`);
@@ -113,7 +145,8 @@ const evaluateRapidFire = async (req, res) => {
       totalPrompts: parseInt(totalPrompts),
       responseTime: parseFloat(responseTime) || 0,
       totalTime: parseFloat(totalTime) || 0,
-      timestamp: Date.now()
+      timestamp: Date.now(),
+      userId: userId
     };
 
     evaluationQueue.push(evaluationRequest);
@@ -205,6 +238,44 @@ const processEvaluationQueue = async () => {
           session.status = 'completed';
           session.completedAt = Date.now();
           console.log(`[processEvaluationQueue] ✅ Session ${request.sessionId} COMPLETED with ${session.completed} evaluations`);
+          
+          // Update database session if it exists
+          if (session.dbSessionId && session.userId) {
+            try {
+              const totalDuration = session.responseTimes.reduce((sum, time) => sum + (time?.totalTime || 0), 0);
+              const avgEnergyLevel = session.evaluations.reduce((sum, eval) => sum + (eval?.evaluation?.energy?.score || 5), 0) / session.evaluations.length;
+              
+              const updateData = {
+                duration: Math.round(totalDuration),
+                energy_levels: session.evaluations.map(eval => eval?.evaluation?.energy?.score || 5),
+                session_data: {
+                  totalPrompts: session.totalPrompts,
+                  difficulty: session.difficulty,
+                  evaluations: session.evaluations,
+                  responseTimes: session.responseTimes,
+                  averageScores: {
+                    responseRate: session.evaluations.reduce((sum, eval) => sum + (eval?.evaluation?.responseRate?.score || 5), 0) / session.evaluations.length,
+                    pace: session.evaluations.reduce((sum, eval) => sum + (eval?.evaluation?.pace?.score || 5), 0) / session.evaluations.length,
+                    energy: avgEnergyLevel
+                  }
+                },
+                audio_files: session.audioFiles.filter(file => file !== null),
+                completed: true
+              };
+              
+              await databaseService.updateGameSession(session.dbSessionId, updateData);
+              
+              // Update user game stats
+              await databaseService.updateUserGameStats(session.userId, 'rapid-fire', {
+                duration: totalDuration,
+                energy_levels: updateData.energy_levels
+              });
+              
+              console.log(`[processEvaluationQueue] Updated database session ${session.dbSessionId} and user stats`);
+            } catch (error) {
+              console.error(`[processEvaluationQueue] Error updating database session:`, error);
+            }
+          }
         } else {
           console.log(`[processEvaluationQueue] Session ${request.sessionId} still in progress: ${session.completed}/${session.totalPrompts}`);
         }

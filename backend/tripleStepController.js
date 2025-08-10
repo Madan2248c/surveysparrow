@@ -1,6 +1,7 @@
 const { GoogleGenerativeAI, HarmCategory, HarmBlockThreshold } = require("@google/generative-ai");
 const fs = require('fs');
 const path = require('path');
+const databaseService = require('./databaseService');
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
 
@@ -117,7 +118,8 @@ const evaluateTripleStep = async (req, res) => {
       totalTime, 
       actualTime, 
       completedEarly,
-      sessionId 
+      sessionId,
+      userId
     } = req.body;
     
     const audioFile = req.file;
@@ -148,6 +150,37 @@ const evaluateTripleStep = async (req, res) => {
 
     console.log(`[evaluateTripleStep] Parsed data - wordList: ${parsedWordList.length} items, integratedWords: ${parsedIntegratedWords.length} items, missedWords: ${parsedMissedWords.length} items`);
 
+    // Create database session if userId is provided
+    let dbSessionId = null;
+    if (userId) {
+      try {
+        const sessionData = {
+          user_id: userId,
+          game_type: 'triple-step',
+          topic: topic,
+          duration: Math.round(actualTime || totalTime),
+          energy_levels: [],
+          session_data: {
+            wordList: parsedWordList,
+            integratedWords: parsedIntegratedWords,
+            missedWords: parsedMissedWords,
+            transcription: transcription,
+            totalTime: totalTime,
+            actualTime: actualTime,
+            completedEarly: completedEarly
+          },
+          audio_files: [],
+          completed: false
+        };
+        
+        const dbSession = await databaseService.createGameSession(sessionData);
+        dbSessionId = dbSession.id;
+        console.log(`[evaluateTripleStep] Created database session: ${dbSessionId}`);
+      } catch (error) {
+        console.error(`[evaluateTripleStep] Error creating database session:`, error);
+      }
+    }
+
     // Store session data
     tripleStepSessions.set(sessionId, {
       topic,
@@ -159,7 +192,9 @@ const evaluateTripleStep = async (req, res) => {
       actualTime,
       completedEarly,
       status: 'processing',
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      dbSessionId: dbSessionId,
+      userId: userId
     });
 
     // Process evaluation
@@ -196,6 +231,43 @@ const evaluateTripleStep = async (req, res) => {
       session.status = 'completed';
       session.completedAt = Date.now();
       console.log(`[evaluateTripleStep] ✅ Session ${sessionId} completed with evaluation`);
+      
+      // Update database session if it exists
+      if (session.dbSessionId && session.userId) {
+        try {
+          const avgEnergyLevel = evaluation.overall?.score || 5;
+          
+          const updateData = {
+            duration: Math.round(session.actualTime || session.totalTime),
+            energy_levels: [avgEnergyLevel],
+            session_data: {
+              ...session.session_data,
+              evaluation: evaluation,
+              averageScores: {
+                primary: evaluation.primary?.score || 5,
+                secondary: evaluation.secondary?.score || 5,
+                tertiary: evaluation.tertiary?.score || 5,
+                recovery: evaluation.recovery?.score || 5,
+                overall: evaluation.overall?.score || 5
+              }
+            },
+            audio_files: [audioFileName],
+            completed: true
+          };
+          
+          await databaseService.updateGameSession(session.dbSessionId, updateData);
+          
+          // Update user game stats
+          await databaseService.updateUserGameStats(session.userId, 'triple-step', {
+            duration: session.actualTime || session.totalTime,
+            energy_levels: [avgEnergyLevel]
+          });
+          
+          console.log(`[evaluateTripleStep] Updated database session ${session.dbSessionId} and user stats`);
+        } catch (error) {
+          console.error(`[evaluateTripleStep] Error updating database session:`, error);
+        }
+      }
     }
 
     const response = {

@@ -630,6 +630,17 @@ class TripleStepGame {
             formData.append('totalTime', this.totalTime);
             formData.append('actualTime', actualTime);
             formData.append('completedEarly', actualTime < this.totalTime);
+            
+            // Add user ID if available
+            const user = localStorage.getItem('user');
+            if (user) {
+                try {
+                    const userData = JSON.parse(user);
+                    formData.append('userId', userData.id);
+                } catch (error) {
+                    console.error('Error parsing user data:', error);
+                }
+            }
 
             const response = await fetch('/api/v1/games/triple-step/evaluate', {
                 method: 'POST',

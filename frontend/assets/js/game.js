@@ -583,6 +583,17 @@ async function evaluateAudio(audioBlob) {
         formData.append('responseTime', responseTime);
         formData.append('totalTime', totalTime);
         
+        // Add user ID if available
+        const user = localStorage.getItem('user');
+        if (user) {
+            try {
+                const userData = JSON.parse(user);
+                formData.append('userId', userData.id);
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+            }
+        }
+        
         const response = await fetch('/api/v1/games/rapid-fire/evaluate', {
             method: 'POST',
             body: formData
