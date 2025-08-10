@@ -1,8 +1,16 @@
 @import url('theme.css');
 
+#background-animation {
+    position: absolute; /* Changed from fixed to absolute */
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0; /* Behind the content */
+}
+
 /* General Body and Container */
 body {
-    background: var(--bg-0);
     color: var(--text-0);
     font-family: 'Inter', sans-serif;
     line-height: 1.7;
@@ -112,11 +120,15 @@ body {
 
 /* Hero Section */
 .hero-section {
+    position: relative; /* This is crucial for positioning the canvas inside */
     padding: 7rem 0;
     text-align: center;
-    background: radial-gradient(1200px 800px at 50% -20%, rgba(0, 245, 255, 0.1), transparent 60%),
-                radial-gradient(1000px 700px at 90% 10%, rgba(255, 42, 224, 0.08), transparent 60%),
-                var(--bg-0);
+    overflow: hidden; /* Ensures canvas doesn't bleed out */
+}
+
+.hero-section .container {
+    position: relative; /* Make sure content stays on top of the canvas */
+    z-index: 1;
 }
 
 .hero-title {
