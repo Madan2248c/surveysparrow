@@ -3,3 +3,5 @@ backend/.env
 backend/node_modules
 
 backend/audio_storage
+
+frontend-react

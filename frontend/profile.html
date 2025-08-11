@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile - Oratora</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="assets/css/main.css">
+    <link rel="stylesheet" href="assets/css/theme.css">
+    <link rel="stylesheet" href="assets/css/profile.css">
+</head>
+<body>
+    <div class="container">
+        <button class="btn-outline back-btn" onclick="window.location.href='index.html'">← Back</button>
+        
+        <div class="profile-container">
+            <div class="profile-header">
+                <h1 class="profile-title">Your Profile</h1>
+                <p class="profile-subtitle">Track your progress and achievements</p>
+            </div>
+        
+            <div id="loading" class="loading">Loading your profile...</div>
+            
+            <div id="error" class="error" style="display: none;"></div>
+            
+            <div id="profileContent" class="profile-content" style="display: none;">
+                <div class="profile-card user-info">
+                    <div id="userAvatar" class="user-avatar">U</div>
+                    <h2 id="userName" class="user-name">User Name</h2>
+                    <p id="userEmail" class="user-email">user@example.com</p>
+                    
+                    <div class="user-details">
+                        <div class="detail-item">
+                            <span class="detail-label">Member Since:</span>
+                            <span id="memberSince" class="detail-value">-</span>
+                        </div>
+                        <div class="detail-item">
+                            <span class="detail-label">Age:</span>
+                            <span id="userAge" class="detail-value">-</span>
+                        </div>
+                    </div>
+                    
+                    <button class="logout-btn" onclick="logout()">Logout</button>
+                </div>
+                
+                <div class="profile-card">
+                    <div class="stats-header">
+                        <h3>Your Statistics</h3>
+                        <a href="analytics.html" class="btn-primary analytics-link">View Detailed Analytics</a>
+                    </div>
+                    <div id="statsGrid" class="stats-grid"></div>
+                    
+                    <div class="sessions-section">
+                        <h3>Recent Sessions</h3>
+                        <div id="sessionsList"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentUser = null;
+        
+        // Check if user is logged in
+        function checkAuth() {
+            const user = localStorage.getItem('user');
+            if (!user) {
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            try {
+                currentUser = JSON.parse(user);
+            } catch (error) {
+                console.error('Error parsing user data:', error);
+                localStorage.removeItem('user');
+                window.location.href = 'login.html';
+                return;
+            }
+        }
+        
+        function logout() {
+            localStorage.removeItem('user');
+            window.location.href = 'index.html';
+        }
+        
+        function showError(message) {
+            document.getElementById('error').textContent = message;
+            document.getElementById('error').style.display = 'block';
+            document.getElementById('loading').style.display = 'none';
+        }
+        
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            return date.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+            });
+        }
+        
+        function formatDuration(seconds) {
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            return `${minutes}m ${remainingSeconds}s`;
+        }
+        
+        function updateUserInfo(user) {
+            document.getElementById('userName').textContent = user.name;
+            document.getElementById('userEmail').textContent = user.email;
+            document.getElementById('userAvatar').textContent = user.name.charAt(0).toUpperCase();
+            document.getElementById('memberSince').textContent = formatDate(user.created_at);
+            document.getElementById('userAge').textContent = user.age || 'Not specified';
+        }
+        
+        function updateStats(stats) {
+            const statsGrid = document.getElementById('statsGrid');
+            statsGrid.innerHTML = '';
+            
+            const gameTypes = ['rapid-fire', 'conductor', 'triple-step'];
+            const gameNames = {
+                'rapid-fire': 'Rapid Fire',
+                'conductor': 'Conductor',
+                'triple-step': 'Triple Step'
+            };
+            
+            gameTypes.forEach(gameType => {
+                const stat = stats.find(s => s.game_type === gameType) || {
+                    total_sessions: 0,
+                    total_duration: 0,
+                    average_energy_level: 0
+                };
+                
+                const statCard = document.createElement('div');
+                statCard.className = 'stat-card';
+                statCard.innerHTML = `
+                    <div class="stat-value">${stat.total_sessions}</div>
+                    <div class="stat-label">${gameNames[gameType]} Sessions</div>
+                `;
+                statsGrid.appendChild(statCard);
+            });
+            
+            // Add total duration stat
+            const totalDuration = stats.reduce((sum, stat) => sum + stat.total_duration, 0);
+            const totalDurationCard = document.createElement('div');
+            totalDurationCard.className = 'stat-card';
+            totalDurationCard.innerHTML = `
+                <div class="stat-value">${formatDuration(totalDuration)}</div>
+                <div class="stat-label">Total Time</div>
+            `;
+            statsGrid.appendChild(totalDurationCard);
+        }
+        
+        function updateSessions(sessions) {
+            const sessionsList = document.getElementById('sessionsList');
+            sessionsList.innerHTML = '';
+            
+            if (sessions.length === 0) {
+                sessionsList.innerHTML = '<p style="color: #666; text-align: center;">No sessions yet. Start playing to see your progress!</p>';
+                return;
+            }
+            
+            const gameNames = {
+                'rapid-fire': 'Rapid Fire',
+                'conductor': 'Conductor',
+                'triple-step': 'Triple Step'
+            };
+            
+            sessions.forEach(session => {
+                const sessionItem = document.createElement('div');
+                sessionItem.className = 'session-item';
+                
+                const avgScore = session.session_data?.averageScores?.overall || 
+                               session.session_data?.averageScores?.energy || 
+                               session.energy_levels?.[0] || 0;
+                
+                // Determine analysis link for supported games
+                let viewLink = '';
+                if (session.id && session.game_type === 'rapid-fire') {
+                    viewLink = `analysis.html?dbSessionId=${encodeURIComponent(session.id)}&game=rapid-fire`;
+                } else if (session.id && session.game_type === 'conductor') {
+                    viewLink = `conductor-analysis.html?dbSessionId=${encodeURIComponent(session.id)}&gameType=conductor`;
+                } else if (session.id && session.game_type === 'triple-step') {
+                    viewLink = `feedback.html?game=triple-step&dbSessionId=${encodeURIComponent(session.id)}`;
+                }
+
+                sessionItem.innerHTML = `
+                    <div class=\"session-header\">
+                        <div class=\"session-game\">${gameNames[session.game_type] || session.game_type}</div>
+                        <div class=\"session-date\">${formatDate(session.created_at)}</div>
+                    </div>
+                    <div class=\"session-details\">
+                        <div class=\"session-detail\">
+                            <span class=\"session-detail-label\">Duration:</span>
+                            <span class=\"session-detail-value\">${formatDuration(session.duration)}</span>
+                        </div>
+                        <div class=\"session-detail\">
+                            <span class=\"session-detail-label\">Score:</span>
+                            <span class=\"session-detail-value\">${avgScore.toFixed(1)}/10</span>
+                        </div>
+                        <div class=\"session-detail\">
+                            <span class=\"session-detail-label\">Status:</span>
+                            <span class=\"session-detail-value\">${session.completed ? 'Completed' : 'In Progress'}</span>
+                        </div>
+                    </div>
+                    ${viewLink ? `<div style=\"margin-top: 10px; text-align: right;\"><a class=\"action-btn btn-outline view-session-btn\" href=\"${viewLink}\">View</a></div>` : ''}
+                `;
+                sessionsList.appendChild(sessionItem);
+            });
+        }
+        
+        async function loadProfile() {
+            try {
+                const response = await fetch(`/api/users/${currentUser.id}/profile`);
+                const data = await response.json();
+                
+                if (data.success) {
+                    updateUserInfo(data.user);
+                    updateStats(data.stats);
+                    updateSessions(data.recentSessions);
+                    
+                    document.getElementById('loading').style.display = 'none';
+                    document.getElementById('profileContent').style.display = 'grid';
+                } else {
+                    showError(data.message || 'Failed to load profile');
+                }
+            } catch (error) {
+                console.error('Error loading profile:', error);
+                showError('Network error. Please try again.');
+            }
+        }
+        
+        // Initialize
+        checkAuth();
+        loadProfile();
+    </script>
+</body>
+</html>

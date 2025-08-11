@@ -50,6 +50,9 @@ class ConductorGame {
             9: '#dc3545'
         };
         
+        this.currentUserId = null;
+        this.currentSessionId = null;
+        
         this.init();
     }
     
@@ -86,75 +89,63 @@ class ConductorGame {
     }
     
     async startGame() {
-        // Get game settings
-        const topicSelect = document.getElementById('topic-select');
-        const customTopic = document.getElementById('custom-topic').value.trim();
-        const duration = parseInt(document.getElementById('duration-select').value);
-        
-        // Validate topic
-        let topic = topicSelect.value;
-        if (topic === 'custom') {
-            if (!customTopic) {
-                alert('Please enter a custom topic');
-                return;
-            }
-            topic = customTopic;
-        }
-        
-        // Generate session ID
-        const sessionId = 'conductor_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-        
         try {
-            // Start conductor session on backend
-            const response = await fetch('/api/v1/games/conductor/start', {
+            // Get user from localStorage (if logged in)
+            const user = JSON.parse(localStorage.getItem('user'));
+            this.currentUserId = user ? user.id : null;
+
+            // Get game settings
+            const topic = document.getElementById('topic-select').value;
+            const customTopic = document.getElementById('custom-topic')?.value;
+            const duration = parseInt(document.getElementById('duration-select').value);
+            
+            const selectedTopic = topic === 'custom' ? customTopic : topic;
+
+            // Generate session ID
+            const sessionId = `conductor_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+            
+            // Start game session
+            const sessionResponse = await fetch('/api/v1/games/conductor/start', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
+                    'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({
-                    sessionId,
-                    topic,
-                    duration
+                    sessionId: sessionId,
+                    userId: this.currentUserId,
+                    topic: selectedTopic,
+                    duration: duration
                 })
             });
-            
-            if (!response.ok) {
+
+            const sessionData = await sessionResponse.json();
+            if (!sessionData.message) {
                 throw new Error('Failed to start session');
             }
-            
-            const sessionData = await response.json();
-            console.log('Session started:', sessionData);
-            
+
+            this.currentSessionId = sessionId;
+
             // Initialize game state
-            this.gameState = {
-                isPlaying: true,
-                isPaused: false,
-                currentEnergy: 5,
-                timeRemaining: duration * 60,
-                totalTime: duration * 60,
-                actualTimeSpent: 0,
-                energyChanges: 0,
-                breathCount: 0,
-                topic: topic,
-                duration: duration,
-                sessionId: sessionId,
-                sessionStartTime: Date.now()
-            };
-            
-            // Start audio recording
+            this.gameState.sessionId = sessionId;
+            this.gameState.sessionStartTime = Date.now();
+            this.gameState.isPlaying = true;
+            this.gameState.isPaused = false;
+            this.gameState.timeRemaining = duration * 60; // Convert to seconds
+            this.gameState.totalTime = duration * 60;
+            this.gameState.topic = selectedTopic;
+            this.gameState.duration = duration;
+            this.gameState.currentEnergy = 5;
+            this.gameState.energyChanges = 0;
+            this.gameState.breathCount = 0;
+
+            // Start recording
             await this.startRecording();
-            
-            // Update UI
+
+            // Continue with existing game logic
             this.showScreen('game');
-            this.updateTopicDisplay();
-            this.updateEnergyDisplay();
-            this.updateTimer();
-            
-            // Start game timers
             this.startGameTimer();
             this.scheduleEnergyChange();
             this.scheduleBreathPrompt();
-            
         } catch (error) {
             console.error('Error starting game:', error);
             alert('Failed to start game. Please try again.');
@@ -321,52 +312,73 @@ class ConductorGame {
     }
     
     async endGame() {
-        this.gameState.isPlaying = false;
-        
-        // Calculate actual time spent (total time minus remaining time)
-        const actualTimeSpent = this.gameState.totalTime - this.gameState.timeRemaining;
-        this.gameState.actualTimeSpent = actualTimeSpent;
+        // Stop recording and timers
+        if (this.isRecording) {
+            await this.stopRecording();
+        }
         
         // Clear all timers
-        Object.values(this.timers).forEach(timer => {
-            if (timer) {
-                clearTimeout(timer);
-                clearInterval(timer);
-            }
-        });
+        if (this.timers.gameTimer) {
+            clearInterval(this.timers.gameTimer);
+        }
+        if (this.timers.energyTimer) {
+            clearTimeout(this.timers.energyTimer);
+        }
+        if (this.timers.breathTimer) {
+            clearTimeout(this.timers.breathTimer);
+        }
         
-        // Stop recording and send audio to backend
-        if (this.gameState.sessionId && this.isRecording) {
-            try {
-                await this.stopRecording();
-                
-                // Send audio to backend
-                const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        // Calculate actual time spent
+        this.gameState.actualTimeSpent = this.gameState.totalTime - this.gameState.timeRemaining;
+        this.gameState.isPlaying = false;
+        
+        // Update the session on the backend
+        try {
+            if (this.currentSessionId) {
+                // Create FormData for audio upload
                 const formData = new FormData();
-                formData.append('audio', audioBlob, 'conductor_session.wav');
-                formData.append('sessionId', this.gameState.sessionId);
+                formData.append('sessionId', this.currentSessionId);
+                formData.append('duration', this.gameState.actualTimeSpent);
+                formData.append('finalEnergyLevels', JSON.stringify([this.gameState.currentEnergy]));
+                formData.append('sessionData', JSON.stringify({
+                    topic: this.gameState.topic,
+                    energyChanges: this.gameState.energyChanges,
+                    breathCount: this.gameState.breathCount
+                }));
                 
+                // Add audio file if available
+                if (this.audioChunks.length > 0) {
+                    const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+                    formData.append('audio', audioBlob, 'conductor_audio.wav');
+                    console.log('[ConductorGame] Audio blob created:', {
+                        size: audioBlob.size,
+                        type: audioBlob.type,
+                        chunksLength: this.audioChunks.length
+                    });
+                } else {
+                    console.log('[ConductorGame] No audio chunks available');
+                }
+                
+                console.log('[ConductorGame] Sending session end request with sessionId:', this.currentSessionId);
                 const response = await fetch('/api/v1/games/conductor/end', {
                     method: 'POST',
                     body: formData
                 });
                 
                 if (!response.ok) {
-                    throw new Error('Failed to end session');
+                    const errorText = await response.text();
+                    console.error('[ConductorGame] Session end failed:', response.status, errorText);
+                    throw new Error(`Session end failed: ${response.status} - ${errorText}`);
                 }
                 
-                const sessionData = await response.json();
-                console.log('Session ended:', sessionData);
-                
-                // Store session data for results
-                this.gameState.sessionData = sessionData;
-                
-            } catch (error) {
-                console.error('Error ending session:', error);
+                const result = await response.json();
+                console.log('[ConductorGame] Session end successful:', result);
             }
+        } catch (error) {
+            console.error('Error ending game session:', error);
         }
-        
-        // Show results
+
+        // Show results screen
         this.showResults();
     }
     
@@ -417,12 +429,18 @@ class ConductorGame {
             console.log(`[ConductorGame] Session status received:`, sessionData.status, sessionData.evaluation ? 'with evaluation' : 'no evaluation');
             
             if (sessionData.status === 'evaluated' && sessionData.evaluation) {
-                // Evaluation is complete, hide loading indicator
+                // Evaluation is complete, hide loading indicator and show results
                 document.getElementById('evaluation-loading').classList.add('hidden');
+                
+                // Display evaluation results
+                this.displayEvaluationResults(sessionData);
             } else if (sessionData.status === 'completed' || sessionData.status === 'recording') {
                 // Still waiting for evaluation, check again in 2 seconds
                 console.log(`[ConductorGame] Evaluation not ready, re-checking in 2 seconds...`);
                 setTimeout(() => this.checkEvaluationStatus(), 2000);
+            } else if (sessionData.status === 'evaluation_failed') {
+                // Evaluation failed
+                document.getElementById('evaluation-loading').innerHTML = '<p style="color: red;">Evaluation failed. Please try again.</p>';
             } else {
                 console.warn(`[ConductorGame] Unexpected session status: ${sessionData.status}`);
                 document.getElementById('evaluation-loading').innerHTML = '<p style="color: orange;">Evaluation status unknown. Please check console for errors.</p>';
@@ -433,9 +451,57 @@ class ConductorGame {
         }
     }
     
+    displayEvaluationResults(sessionData) {
+        const resultsContainer = document.querySelector('.results-container');
+        
+        // Create evaluation results section
+        const evaluationSection = document.createElement('div');
+        evaluationSection.className = 'evaluation-results';
+        evaluationSection.innerHTML = `
+            <h3>Performance Analysis</h3>
+            <div class="evaluation-grid">
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.overallPerformance?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Overall Performance</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.overallPerformance?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.responseSpeed?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Response Speed</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.responseSpeed?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.energyRange?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Energy Range</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.energyRange?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.contentContinuity?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Content Continuity</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.contentContinuity?.feedback || 'No feedback available'}</div>
+                </div>
+                <div class="evaluation-item">
+                    <div class="evaluation-score">${sessionData.evaluation?.breathRecovery?.score || 'N/A'}/10</div>
+                    <div class="evaluation-label">Breath Recovery</div>
+                    <div class="evaluation-feedback">${sessionData.evaluation?.breathRecovery?.feedback || 'No feedback available'}</div>
+                </div>
+            </div>
+        `;
+        
+        // Insert evaluation results before the action buttons
+        const actionButtons = document.querySelector('.results-actions');
+        resultsContainer.insertBefore(evaluationSection, actionButtons);
+    }
+    
 
     
     clearResultsDisplay() {
+        // Remove any previously added evaluation results
+        const existingEvaluation = document.querySelector('.evaluation-results');
+        if (existingEvaluation) {
+            existingEvaluation.remove();
+        }
+        
         // Reset loading indicator
         const loadingIndicator = document.getElementById('evaluation-loading');
         if (loadingIndicator) {
@@ -443,7 +509,7 @@ class ConductorGame {
                 <p>Analyzing your performance...</p>
                 <div class="spinner"></div>
             `;
-            loadingIndicator.classList.add('hidden');
+            loadingIndicator.classList.remove('hidden');
         }
     }
     

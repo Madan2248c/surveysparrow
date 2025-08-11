@@ -93,42 +93,82 @@ const gameData = {
     },
     'triple-step': {
         title: 'Triple Step',
-        instructions: 'Structure your response in three parts: introduction, development, and conclusion. Build compelling narratives.',
-        minTimer: 45,
-        maxTimer: 180,
-        defaultTimer: 90,
-        prompts: [
-            'Why is education important?',
-            'How can we improve communication?',
-            'What makes a good leader?',
-            'Why should we protect the environment?',
-            'How does technology affect society?',
-            'What is the value of friendship?',
-            'Why is creativity important?',
-            'How can we achieve our goals?',
-            'What makes a successful team?',
-            'Why is health important?',
-            'How can we solve problems effectively?',
-            'What is the role of family?',
-            'Why should we learn from mistakes?',
-            'How can we build confidence?',
-            'What makes a good decision?',
-            'Why is time management crucial?',
-            'How can we show empathy?',
-            'What is the importance of honesty?',
-            'Why should we embrace change?',
-            'How can we make a difference?'
-        ]
+        instructions: 'Give a speech on a topic while smoothly integrating random words that appear on screen. Maintain your message throughline despite distractions.',
+        minTimer: 60,
+        maxTimer: 300,
+        defaultTimer: 150,
+        minWords: 4,
+        maxWords: 8,
+        defaultWords: 6,
+        minInterval: 20,
+        maxInterval: 40,
+        defaultInterval: 30,
+        difficulties: {
+            easy: {
+                name: 'Novice',
+                description: '4 easy words, 30-second intervals',
+                wordCount: 4,
+                interval: 30,
+                wordTypes: ['objects', 'emotions', 'places']
+            },
+            medium: {
+                name: 'Intermediate', 
+                description: '6 mixed words, 20-second intervals',
+                wordCount: 6,
+                interval: 20,
+                wordTypes: ['objects', 'emotions', 'places', 'actions']
+            },
+            hard: {
+                name: 'Advanced',
+                description: '8 abstract concepts, random timing',
+                wordCount: 8,
+                interval: 15,
+                wordTypes: ['objects', 'emotions', 'places', 'actions', 'concepts']
+            }
+        },
+        topics: [
+            'Innovation in technology',
+            'The importance of education',
+            'Building strong relationships',
+            'Environmental conservation',
+            'Personal growth and development',
+            'The power of communication',
+            'Leadership in modern times',
+            'Creativity and problem-solving',
+            'Health and wellness',
+            'Community building',
+            'The future of work',
+            'Cultural diversity',
+            'Mental health awareness',
+            'Sustainable living',
+            'Digital transformation',
+            'The value of teamwork',
+            'Adapting to change',
+            'Social responsibility',
+            'The art of learning',
+            'Building confidence'
+        ],
+        wordBank: {
+            objects: ['pumpkin', 'microwave', 'umbrella', 'laptop', 'coffee', 'book', 'phone', 'chair', 'window', 'car', 'tree', 'flower', 'clock', 'mirror', 'table', 'lamp', 'door', 'key', 'pen', 'paper'],
+            emotions: ['joy', 'nostalgia', 'excitement', 'curiosity', 'confidence', 'wonder', 'gratitude', 'hope', 'courage', 'peace', 'enthusiasm', 'serenity', 'determination', 'inspiration', 'contentment', 'passion', 'optimism', 'empathy', 'resilience', 'clarity'],
+            places: ['kitchen', 'beach', 'mountain', 'library', 'park', 'office', 'garden', 'museum', 'airport', 'hospital', 'school', 'restaurant', 'theater', 'gym', 'market', 'church', 'hotel', 'station', 'bridge', 'forest'],
+            actions: ['dance', 'create', 'explore', 'build', 'learn', 'share', 'dream', 'grow', 'connect', 'discover', 'inspire', 'transform', 'celebrate', 'reflect', 'achieve', 'support', 'innovate', 'adapt', 'collaborate', 'persevere'],
+            concepts: ['freedom', 'wisdom', 'beauty', 'truth', 'justice', 'love', 'faith', 'hope', 'courage', 'integrity', 'excellence', 'harmony', 'balance', 'progress', 'tradition', 'innovation', 'community', 'individuality', 'responsibility', 'potential']
+        }
     }
 };
 
 // Navigation function
 function navigateToSetup(gameType) {
+    console.log('navigateToSetup called with:', gameType);
+    
     // Store game type in session storage for other pages to access
     sessionStorage.setItem('currentGame', gameType);
     sessionStorage.setItem('currentTimer', gameData[gameType].defaultTimer);
     sessionStorage.setItem('selectedDifficulty', 'medium');
-    sessionStorage.setItem('selectedPromptCount', gameData[gameType].defaultPrompts || 5);
+    sessionStorage.setItem('selectedPromptCount', gameData[gameType].defaultPrompts || gameData[gameType].defaultWords || 5);
+    
+    console.log('Navigating to setup page for:', gameType);
     
     // Navigate to appropriate page based on game type
     if (gameType === 'conductor') {
@@ -141,4 +181,15 @@ function navigateToSetup(gameType) {
 // Initialize the app
 document.addEventListener('DOMContentLoaded', function() {
     console.log('Oratora - Public Speaking Training Platform loaded!');
+    console.log('Game data available:', Object.keys(gameData));
+    console.log('navigateToSetup function available:', typeof navigateToSetup);
+    
+    // Add click event listeners as backup
+    document.querySelectorAll('.game-card').forEach(card => {
+        card.addEventListener('click', function() {
+            console.log('Game card clicked via event listener');
+        });
+    });
+    
+
 });

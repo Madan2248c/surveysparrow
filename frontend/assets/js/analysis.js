@@ -1,5 +1,6 @@
 // Analysis page state
 let sessionId = null;
+let dbSessionId = null;
 let currentGame = '';
 let totalPrompts = 0;
 let difficulty = '';
@@ -8,13 +9,18 @@ let pollInterval = null;
 
 // Initialize analysis page
 document.addEventListener('DOMContentLoaded', function() {
-    // Get session data from storage
+    // Prefer URL params when viewing past sessions
+    const urlParams = new URLSearchParams(window.location.search);
+    dbSessionId = urlParams.get('dbSessionId');
+    const urlGame = urlParams.get('game');
+
+    // Fallback to sessionStorage (live flow)
     sessionId = sessionStorage.getItem('sessionId');
-    currentGame = sessionStorage.getItem('currentGame');
+    currentGame = urlGame || sessionStorage.getItem('currentGame');
     totalPrompts = parseInt(sessionStorage.getItem('totalPrompts')) || 0;
     difficulty = sessionStorage.getItem('difficulty') || 'medium';
     
-    if (!sessionId) {
+    if (!sessionId && !dbSessionId) {
         window.location.href = 'index.html';
         return;
     }
@@ -74,7 +80,12 @@ function startPolling() {
 
 async function checkSessionStatus() {
     try {
-        const response = await fetch(`/api/v1/games/rapid-fire/session/${sessionId}`);
+        let response;
+        if (dbSessionId) {
+            response = await fetch(`/api/v1/games/rapid-fire/session-db/${dbSessionId}`);
+        } else {
+            response = await fetch(`/api/v1/games/rapid-fire/session/${sessionId}`);
+        }
         
         if (!response.ok) {
             throw new Error('Failed to get session status');
